@@ -1,0 +1,16 @@
+[ignore]
+dist
+node_modules
+scripts
+
+[include]
+src
+
+[libs]
+flow
+
+[lints]
+
+[options]
+
+[strict]
