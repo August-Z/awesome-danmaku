@@ -1,6 +1,5 @@
 // @flow
 import * as __CONFIG__ from "../config"
-import $ from 'jquery'
 import { initMergeDefaultParams } from "../util/init-options";
 import { translateTextToWidth } from "../util/text-size";
 import { Dtrack } from "../track";
@@ -8,19 +7,21 @@ import { DanmakuPlayer } from "../control";
 
 export class Dnode {
   control: DanmakuPlayer
+  track: Dtrack
   text: string
   width: number
   height: number
   fontSize: number | string
   fontFamily: string
   color: string
+  speed: number
   translateX: number
   launchTime: number
   dom: HTMLElement
 
   static instanceTextSizeDom: HTMLElement
 
-  constructor (ops: string | Object, control: DanmakuPlayer) {
+  constructor (ops: string | Object, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
     if (typeof ops === 'string') {
       this.text = ops
       this.control = control
@@ -30,7 +31,8 @@ export class Dnode {
         text: '',
         fontSize: __CONFIG__.DnodeDefaultConfig.FONT_SIZE,
         fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY,
-        color: __CONFIG__.DnodeDefaultConfig.COLOR
+        color: __CONFIG__.DnodeDefaultConfig.COLOR,
+        speed: __CONFIG__.DnodeDefaultConfig.SPEED,
       })
     }
     this._init()
@@ -56,17 +58,118 @@ export class Dnode {
     return Dnode.instanceTextSizeDom;
   }
 
-  patch (): Dnode {
-    this.dom = document.createElement(this.control.nodeTag)
-    this.dom.className = this.control.nodeClass
-    this.dom.style.fontSize = this.fontSize + 'px'
-    this.dom.style.fontFamily = this.fontFamily
-    this.dom.style.color = this.color
-    this.dom.innerText = this.text
+  /**
+   * 开始滚动
+   */
+  run (): any {
+    return new Promise((resolve, reject) => {
+      this._joinTrack()._patch()._render()
+      try {
+        this.track.rolling((t) => {
+          this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
+          setTimeout(() => {
+            t.stopRolling()
+          }, this.launchTime)
+          setTimeout(() => {
+            // todo: hook kill dom
+            resolve(this)
+          }, this.control.rollingTime)
+        })
+      } catch (e) {
+        reject(e)
+      } finally {
+        console.log('Dnode is run:', this)
+      }
+    })
+
+    // todo 运行完后的销毁动作
+
+  }
+
+  _init (): Dnode {
+    this._computeTextSize()
+    this._computeDistance()
     return this
   }
 
-  render (ctx: HTMLElement): Dnode {
+  _computeTextSize (): void {
+    const { width, height } = translateTextToWidth(this.text, Dnode.getInstanceTemplateDom())
+    this.width = width
+    this.height = height
+  }
+
+  _computeDistance (): void {
+    const totalDis: number = this.control.playerWidth + this.width
+    this.translateX = (-1) * totalDis
+    this.launchTime = Math.round(this.control.rollingTime * (this.width / totalDis));
+  }
+
+  /**
+   * 节点进入轨道
+   * @remark 此时弹幕已经 checked，尚未渲染
+   * @returns {Dnode}
+   */
+  _joinTrack (): Dnode {
+    this.track = this.control.getUnObstructedTrack()
+    return this
+  }
+
+  /**
+   * 修补节点 attr、style 并创建 DOM
+   * @returns {Dnode}
+   */
+  _patch (): Dnode {
+    const nodeDom: HTMLElement = document.createElement(this.control.nodeTag)
+    nodeDom.className = this.control.nodeClass
+    nodeDom.innerText = this.text
+    const patchStyle = {
+      display: 'inline-block',
+      width: `${this.width}px`,
+      height: `${this.height}px`,
+      lineHeight: '1.125',
+      fontSize: `${this.fontSize}px`,
+      fontFamily: this.fontFamily,
+      color: this.color,
+      top: `${this.track.getTopByMiddleDnode(this.height)}px`,
+      left: `${this.control.playerWidth}px`,
+      opacity: '1',
+      transform: `translate3d(0, 0, 0)`,
+      transition: `transform ${Math.round(this.control.rollingTime / this.speed)}ms linear 0s`,
+      position: 'absolute',
+      userSelect: 'none',
+      whiteSpace: 'pre',
+      perspective: '500px',
+      cursor: 'none',
+      pointerEvents: 'none'
+    }
+    const styleStr = Object.entries(patchStyle).reduce((tol, [k, v]: any): any => tol += `${k}: ${v};`, '')
+    nodeDom.setAttribute('style', `"${styleStr}"`)
+    // nodeDom.style.fontSize = this.fontSize + 'px'
+    // nodeDom.style.fontFamily = this.fontFamily
+    // nodeDom.style.color = this.color
+    // nodeDom.style.top = `${this.track.getTopByMiddleDnode(this.height)}px`
+    // nodeDom.style.left = `${this.control.playerWidth}px`
+    // nodeDom.style.transform = `translate3d(0, 0, 0)`
+    // nodeDom.style.transition = `transform ${Math.round(this.control.rollingTime / this.speed)}ms linear 0s`
+    // nodeDom.style.position = 'absolute'
+    // nodeDom.style.userSelect = 'none'
+    // nodeDom.style.whiteSpace = 'pre'
+    // nodeDom.style.perspective = '500px'
+    // nodeDom.style.display = 'inline-block'
+    // nodeDom.style.opacity = '1'
+    // nodeDom.style.lineHeight = '1.125'
+    // nodeDom.style.cursor = 'none'
+    // nodeDom.style.pointerEvents = 'none'
+    this.dom = nodeDom
+    return this
+  }
+
+  /**
+   * 渲染 dom
+   * @param ctx
+   * @returns {Dnode}
+   */
+  _render (ctx?: HTMLElement): Dnode {
     if (this.dom instanceof HTMLElement) {
       ctx
         ? ctx.appendChild(this.dom)
@@ -74,45 +177,5 @@ export class Dnode {
       return this
     }
     throw new Error('Dnode needs HTMLElement to render function !')
-  }
-
-  html (): string {
-    return `<div class="danmaku-item">${this.text}</div>\r\n`;
-  }
-
-  /**
-   * 弹幕进入轨道
-   * @param track<Dtrack>
-   * @remark 此时弹幕已经 checked，尚未渲染
-   */
-  joinTrack (track: Dtrack): void {
-    const node = this
-    const nodeDom = this.dom
-    nodeDom.style.top = `${track.getTopByMiddleDnode(node.height)}px`
-    nodeDom.style.transform = 'translate3d(0, 0, 0)'
-    track.rolling((t) => {
-      console.log('track.rolling - ctx:', this)
-      nodeDom.style.transform = `translate3d(${node.translateX}px, 0, 0)`
-      setTimeout(() => {
-        t.stopRolling()
-      }, node.launchTime)
-    })
-  }
-
-  _init () {
-    this._computeTextSize();
-    this._computeDistance();
-  }
-
-  _computeTextSize () {
-    const { width, height } = translateTextToWidth(this.text, Dnode.getInstanceTemplateDom())
-    this.width = width
-    this.height = height
-  }
-
-  _computeDistance () {
-    const totalDis: number = this.control.playerWidth + this.width
-    this.translateX = (-1) * totalDis
-    this.launchTime = Math.round(this.control.rollingTime * (this.width / totalDis));
   }
 }

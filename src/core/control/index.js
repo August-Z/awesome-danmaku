@@ -1,5 +1,7 @@
+// @flow
 import { Dtrack } from '../track';
-import * as DanmakuConfig from '../config';
+import { initMergeDefaultParams } from "../util/init-options";
+import { Dnode } from "../node";
 
 /**
  * @author August-Z
@@ -10,90 +12,129 @@ import * as DanmakuConfig from '../config';
 export class DanmakuPlayer {
 
   wrap: HTMLElement
-  rollingTime: number = 6000
-  nodeTag: string = 'div'
+  rollingTime: number
+  nodeTag: string
   nodeClass: string
+  nodeValueKey: string
+  trackCount: number
+  trackHeight: number
+  trackList: Array<Dtrack>
+  list: Array<Object>
+  playTimer: any
 
-  constructor (ops) {
-    // todo
-    this.$danmakuBox = ops.$danmakuBox;
-    this.danmakuList = [];
-    this.trackList = [];
-    this._initTrackList(ops.trackLength);
+  constructor (ops: DanmakuPlayerOptions) {
+    if (!window) {
+      throw new Error('请在浏览器环境下运行')
+    }
+    initMergeDefaultParams(this, ops, {
+      wrap: document.body,
+      rollingTime: 6000,
+      nodeTag: 'div',
+      nodeClass: '',
+      nodeValueKey: 'value',
+      trackCount: 5,
+      trackHeight: 40
+    })
+    if (ops.hasOwnProperty('list')) {
+      this.insertDanmaku(ops.list)
+    }
+    this.list = []
+    this.trackList = []
+    this._init()
   }
 
   get playerWidth (): number {
-    return this.wrap.clientWidth
+    return this.wrap.clientWidth || 0
   }
 
-  static getInstanceControl ({ $danmakuBox = null, trackLength = 7, danmakuList = [] }) {
+  static instanceControl: DanmakuPlayer
+
+  static getInstanceControl (ops: DanmakuPlayerOptions | any): DanmakuPlayer {
     if (!DanmakuPlayer.instanceControl) {
-      DanmakuPlayer.instanceControl = new DanmakuPlayer({
-        $danmakuBox, trackLength, danmakuList
-      });
+      DanmakuPlayer.instanceControl = new DanmakuPlayer(ops)
     }
-    return DanmakuPlayer.instanceControl;
+    return DanmakuPlayer.instanceControl
   }
 
   /**
    * 向弹幕播放器中添加弹幕
    * @param danmaku<Array<DnodeOptions> | DnodeOptions | string>
    */
-  insertDanmaku (danmaku: Array<DnodeOptions> | DnodeOptions | string) {
-    const checkValue = (d) => d instanceof Object && d.hasOwnProperty('value');
+  insertDanmaku (danmaku: any) {
+    const checkValue = (d) => d instanceof Object && d.hasOwnProperty(this.nodeValueKey)
     if (Array.isArray(danmaku)) {
       if (danmaku.every((d) => checkValue(d))) {
-        this.danmakuList.push(...danmaku.map((d) => new Dnode({
-          text: d.value,
+        this.list.push(...danmaku.map((d) => new Dnode({
+          text: d[this.nodeValueKey],
           control: this
         })));
       } else {
-        throw new Error('Insert Error, danmaku value check fail! Array has bad value!');
+        throw new Error('Insert Error, danmaku value check fail! Array has bad value!')
       }
     } else if (checkValue(danmaku)) {
-      this.danmakuList.push(new Dnode({
-        text: danmaku.value,
+      this.list.push(new Dnode({
+        text: danmaku[this.nodeValueKey],
         control: this
-      }));
+      }))
     } else if (typeof danmaku === 'string' && danmaku.length) {
-      this.danmakuList.push(new Dnode({
+      this.list.push(new Dnode({
         text: danmaku,
         control: this
-      }));
+      }))
     } else {
-      throw new Error('Insert Error, danmaku value check fail! Bad Param !');
+      throw new Error('Insert Error, danmaku value check fail! Bad Param !')
     }
   }
 
-  run () {
-    if (!Array.isArray(this.danmakuList)) {
-      throw new TypeError('danmakuList must instanceof Array');
+  play (): DanmakuPlayer {
+    if (!Array.isArray(this.list)) {
+      throw new TypeError('list must instanceof Array')
     }
-    let i = 0;
-    const instanceTimer = setInterval(() => {
-      if (this.danmakuList.length && this.trackList.some((t) => t.unObstructed)) {
-        const track = this.getUnObstructedTrack(); // <Dtrack>
-        const node = this.danmakuList[i++];  // <Dnode>
-        node.patch().joinTrack(track).render()
+    this.playTimer = setInterval(() => {
+      if (this.list.length && this.trackList.some((t: Dtrack) => t.unObstructed)) {
+        const node: Dnode = this.list.shift()  // <Dnode>
+        if (node) {
+          node.run().then((n: Dnode) => {
+            console.log('Dnode run over:', n)
+          })
+        }
       }
-    }, 200);
+    }, 200)
+    return this
   }
 
-  getUnObstructedTrack (trackIndex) {
-    const unObstructedTrackList = this.trackList.filter((t) => t.unObstructed);
-    const index = typeof trackIndex === 'number'
+  getUnObstructedTrack (trackIndex?: number): Dtrack {
+    const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed);
+    const index: number = typeof trackIndex === 'number'
       ? trackIndex
-      : Math.floor(Math.random() * unObstructedTrackList.length);
-    return unObstructedTrackList[index];
+      : Math.floor(Math.random() * unObstructedTrackList.length)
+    return unObstructedTrackList[index]
   }
 
-  _initTrackList (len) {
-    for (let i = 0; i < len; i++) {
+  _init (): DanmakuPlayer {
+    this._bindControlStyle()
+    this._initTrackList()
+    return this
+  }
+
+  _bindControlStyle (): DanmakuPlayer {
+    this.wrap.style.position = 'relative'
+    this.wrap.style.overflow = 'hidden'
+    // this.wrap.style.userSelect = 'none'
+    this.wrap.style.cursor = 'none'
+    this.wrap.style.pointerEvents = 'none'
+    this.wrap.style.verticalAlign = 'baseline'
+    return this
+  }
+
+  _initTrackList (): DanmakuPlayer {
+    for (let i = 0; i < this.trackCount; i++) {
       this.trackList.push(new Dtrack({
         index: i,
-        width: DanmakuConfig.PLAYER_WIDTH,
-        height: DanmakuConfig.TRACK_HEIGHT
-      }));
+        width: this.playerWidth,
+        height: this.trackHeight
+      }))
     }
+    return this
   }
 }

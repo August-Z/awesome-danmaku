@@ -4,5 +4,6 @@
   "ignore": [
     "dist/*.js",
     "packages/**/*.js"
-  ]
+  ],
+  "comments": false
 }

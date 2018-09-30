@@ -15,7 +15,7 @@ export class Dtrack {
     this.offsetTop = ops.height * ops.index
   }
 
-  rolling (cb: function, delay: number = 20): void {
+  rolling (cb: Function, delay: number = 20): void {
     setTimeout(() => {
       this.status = Dtrack.ROLLING
       typeof cb === 'function' && cb(this)

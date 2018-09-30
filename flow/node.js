@@ -1,12 +1,10 @@
-import { DanmakuPlayer } from "../src/core/control";
-import * as __CONFIG__ from "../src/core/config";
-
 declare type DnodeOptions = {
   control: any;
   text: string;
   fontSize: number | string;
   fontFamily: string;
   color: string;
+  speed: number;
 }
 
 declare type DnodeSize = {
