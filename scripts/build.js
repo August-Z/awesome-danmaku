@@ -15,7 +15,7 @@ const banner = [
 const config = {
   entry: path.resolve(__dirname, '../') + '/src',
   output: {
-    filename: 'danmaku.js',
+    filename: 'index.min.js',
     path: path.resolve(__dirname, '../') + '/dist',
     libraryTarget: 'umd'
   },

@@ -1,6 +1,12 @@
 {
-  "presets": ["es2015", "flow-vue"],
-  "plugins": ["syntax-dynamic-import"],
+  "presets": [
+    "es2015",
+    "flow-vue",
+    "stage-2"
+  ],
+  "plugins": [
+    "syntax-dynamic-import"
+  ],
   "ignore": [
     "dist/*.js",
     "packages/**/*.js"

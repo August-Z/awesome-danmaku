@@ -1,7 +1,6 @@
 // @flow
 import * as __CONFIG__ from "../config"
-import { initMergeDefaultParams } from "../util/init-options";
-import { translateTextToWidth } from "../util/text-size";
+import { translateTextToSize } from "../util/text-size";
 import { Dtrack } from "../track";
 import { DanmakuPlayer } from "../control";
 
@@ -21,41 +20,46 @@ export class Dnode {
 
   static instanceTextSizeDom: HTMLElement
 
-  constructor (ops: string | Object, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
+  constructor (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
     if (typeof ops === 'string') {
       this.text = ops
       this.control = control
+      // todo extend control style
     } else if (ops instanceof Object) {
-      initMergeDefaultParams(this, ops, {
-        control: DanmakuPlayer.getInstanceControl(),
-        text: '',
-        fontSize: __CONFIG__.DnodeDefaultConfig.FONT_SIZE,
-        fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY,
-        color: __CONFIG__.DnodeDefaultConfig.COLOR,
-        speed: __CONFIG__.DnodeDefaultConfig.SPEED,
-      })
+      this.text = ops.text
+      this.control = ops.control
+      this.fontSize = ops.fontSize
+      this.fontFamily = ops.fontFamily
+      this.color = ops.color
+      this.speed = ops.speed
+    } else {
+      throw new Error('Dnode ops bad !')
     }
     this._init()
   }
 
   static getInstanceTemplateDom (ops: DnodeTemplateDom = {
-    visibility: 'hidden',
     fontSize: __CONFIG__.DnodeDefaultConfig.FONT_SIZE + 'px',
-    fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY,
-    display: 'inline-block'
+    fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY
   }): HTMLElement {
     if (!Dnode.instanceTextSizeDom) {
       const template: HTMLElement = document.createElement('span')
-      template.style.visibility = ops.visibility
+      template.style.position = 'absolute'
+      template.style.visibility = 'hidden'
+      template.style.display = 'inline-block'
       template.style.fontSize = ops.fontSize
       template.style.fontFamily = ops.fontFamily
-      template.style.display = ops.display
       if (document.body) {
-        document.body.appendChild(template);
+        document.body.appendChild(template)
+      } else {
+        throw new Error('Template DOM Error: document.body missing !!')
       }
-      Dnode.instanceTextSizeDom = template;
+      Dnode.instanceTextSizeDom = template
+    } else {
+      Dnode.instanceTextSizeDom.style.fontSize = ops.fontSize
+      Dnode.instanceTextSizeDom.style.fontFamily = ops.fontFamily
     }
-    return Dnode.instanceTextSizeDom;
+    return Dnode.instanceTextSizeDom
   }
 
   /**
@@ -71,37 +75,54 @@ export class Dnode {
             t.stopRolling()
           }, this.launchTime)
           setTimeout(() => {
-            // todo: hook kill dom
+            this.remove()
             resolve(this)
           }, this.control.rollingTime)
         })
       } catch (e) {
         reject(e)
       } finally {
-        console.log('Dnode is run:', this)
+        // todo some hook?
       }
     })
-
-    // todo 运行完后的销毁动作
-
   }
 
-  _init (): Dnode {
-    this._computeTextSize()
-    this._computeDistance()
+  remove (): Dnode {
+    if (this.dom instanceof HTMLElement && this.control.wrap instanceof HTMLElement) {
+      if (this.dom.parentElement === this.control.wrap) {
+        this.control.wrap.removeChild(this.dom)
+      } else {
+        throw new Error('Control Dom not is node dom parent，Can\'t remove node！')
+      }
+    } else {
+      throw new TypeError('Control Dom or Node Dom not HTMLElement !')
+    }
     return this
   }
 
-  _computeTextSize (): void {
-    const { width, height } = translateTextToWidth(this.text, Dnode.getInstanceTemplateDom())
+  removeDnode (): void {
+    delete this
+  }
+
+  _init (): Dnode {
+    this._computedTextSize()
+    this._computedTotalDistance()
+    return this
+  }
+
+  _computedTextSize (): void {
+    const { width, height } = translateTextToSize(this.text, Dnode.getInstanceTemplateDom({
+      fontSize: this.fontSize + 'px',
+      fontFamily: this.fontFamily
+    }))
     this.width = width
     this.height = height
   }
 
-  _computeDistance (): void {
+  _computedTotalDistance (): void {
     const totalDis: number = this.control.playerWidth + this.width
     this.translateX = (-1) * totalDis
-    this.launchTime = Math.round(this.control.rollingTime * (this.width / totalDis));
+    this.launchTime = Math.round(this.control.rollingTime * (this.width / totalDis))
   }
 
   /**
@@ -142,24 +163,10 @@ export class Dnode {
       cursor: 'none',
       pointerEvents: 'none'
     }
-    const styleStr = Object.entries(patchStyle).reduce((tol, [k, v]: any): any => tol += `${k}: ${v};`, '')
-    nodeDom.setAttribute('style', `"${styleStr}"`)
-    // nodeDom.style.fontSize = this.fontSize + 'px'
-    // nodeDom.style.fontFamily = this.fontFamily
-    // nodeDom.style.color = this.color
-    // nodeDom.style.top = `${this.track.getTopByMiddleDnode(this.height)}px`
-    // nodeDom.style.left = `${this.control.playerWidth}px`
-    // nodeDom.style.transform = `translate3d(0, 0, 0)`
-    // nodeDom.style.transition = `transform ${Math.round(this.control.rollingTime / this.speed)}ms linear 0s`
-    // nodeDom.style.position = 'absolute'
-    // nodeDom.style.userSelect = 'none'
-    // nodeDom.style.whiteSpace = 'pre'
-    // nodeDom.style.perspective = '500px'
-    // nodeDom.style.display = 'inline-block'
-    // nodeDom.style.opacity = '1'
-    // nodeDom.style.lineHeight = '1.125'
-    // nodeDom.style.cursor = 'none'
-    // nodeDom.style.pointerEvents = 'none'
+    const style: CSSStyleDeclaration = nodeDom.style
+    Object.entries(patchStyle).forEach(([k, v]: any): void => {
+      style[k] = v
+    })
     this.dom = nodeDom
     return this
   }

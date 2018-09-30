@@ -13,8 +13,6 @@ declare type DnodeSize = {
 }
 
 declare type DnodeTemplateDom = {
-  visibility: string;
   fontSize: string;
   fontFamily: string;
-  display: string;
 }

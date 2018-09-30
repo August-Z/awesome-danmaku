@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Awesome Danmaku Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #app {
+      /*width: 1024px;*/
+      /*height: 576px;*/
+      width: 100vw;
+      height: 100vh;
+      background-color: #333;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+</div>
+</body>
+</html>
+<script type="text/javascript" src="../dist/index.min.js"></script>
+<script type="text/javascript">
+  const DanmakuPlayer = AwesomeDanmaku.DanmakuPlayer.getInstanceControl({
+    wrap: document.querySelector('#app'),
+    nodeClass: 'danmaku-item',
+    trackCount: 12,
+    trackHeight: 60,
+    nodeValueKey: 'text',
+    on: {
+      init: () => {
+        console.log('[state: init]')
+      },
+      play: () => {
+        console.log('[state: play]')
+      },
+      pause: () => {
+        console.log('[state: pause]')
+      },
+      stop: () => {
+        console.log('[state: stop]')
+      }
+    }
+  })
+
+  DanmakuPlayer.play()
+  let i = 1
+  const fontFamilyList = ['Microsoft YaHei', 'PingFang SC', 'Consolas', 'Heiti SC', 'SimHei']
+  let color = () => {
+    return '#' + [
+      (Math.floor(Math.random() * 155) + 100).toString(16),
+      (Math.floor(Math.random() * 155) + 100).toString(16),
+      (Math.floor(Math.random() * 155) + 100).toString(16),
+    ].join('')
+  }
+  let fontSize = () => {
+    return Math.floor(Math.random() * 26) + 18
+  }
+  let fontFamily = () => {
+    return fontFamilyList[Math.floor(Math.random() * fontFamilyList.length)]
+  }
+  let timer = setInterval(() => {
+    DanmakuPlayer.insertDanmaku({
+      text: `这是第${i++}弹幕！！`,
+      color: color(),
+      fontSize: fontSize(),
+      fontFamily: fontFamily()
+    })
+    if (i > 1000) {
+      DanmakuPlayer.pause()
+      setTimeout(() => {
+        DanmakuPlayer.stop()
+      }, 5000)
+      clearInterval(timer)
+    }
+  }, 200)
+</script>

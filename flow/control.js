@@ -6,5 +6,6 @@ declare type DanmakuPlayerOptions = {
   nodeValueKey: number | string;
   trackCount: number;
   trackHeight: number | string;
-  list: Array<string | Object>;
+  list: Array<string | Object | DnodeOptions>;
+  on: { [key: string]: Function };
 }
