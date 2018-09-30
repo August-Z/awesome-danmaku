@@ -6,7 +6,6 @@ class DanmakuControlEvent extends DanmakuEvent {
 
   constructor (ops: any) {
     super(ops)
-    console.log(this)
   }
 
   hook (hook: string, cb: Function): void {
