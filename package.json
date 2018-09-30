@@ -1,6 +1,6 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Danmaku components for HTML5",
   "main": "dist/index.min.js",
   "module": "dist/index.min.js",

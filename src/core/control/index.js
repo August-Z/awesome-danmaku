@@ -3,8 +3,8 @@ import { Dtrack } from '../track';
 import { initMergeDefaultParams } from "../util/init-options";
 import { Dnode } from "../node";
 import * as __CONFIG__ from "../config";
+import * as __EVENT__ from "../event/control";
 import { DanmakuControlPlayStatus } from "../config";
-import * as __EVENT__ from "../event/control"
 import { DanmakuControlEventName } from "../config";
 
 /**
@@ -15,7 +15,7 @@ import { DanmakuControlEventName } from "../config";
  */
 export class DanmakuPlayer {
 
-  wrap: HTMLElement
+  el: HTMLElement
   rollingTime: number
   nodeTag: string
   nodeClass: string
@@ -24,7 +24,9 @@ export class DanmakuPlayer {
   trackHeight: number
   trackList: Array<Dtrack>
   list: Array<Dnode>
+  nodeList: Array<Dnode>
   playTimer: any
+  cleanTimer: any
   playStatus: number | string
   on: { [key: any]: Function }
 
@@ -36,7 +38,7 @@ export class DanmakuPlayer {
     }
     this.playStatus = DanmakuControlPlayStatus.EMPTY
     initMergeDefaultParams(ops, {
-      wrap: document.body,
+      el: document.body,
       rollingTime: 6000,
       nodeTag: 'div',
       nodeClass: '',
@@ -54,7 +56,7 @@ export class DanmakuPlayer {
   }
 
   get playerWidth (): number {
-    return this.wrap.clientWidth || 0
+    return this.el.clientWidth || 0
   }
 
   static getInstanceControl (ops: DanmakuPlayerOptions | any): DanmakuPlayer {
@@ -79,19 +81,24 @@ export class DanmakuPlayer {
       throw new TypeError('list must instanceof Array')
     }
     this.playTimer = setInterval(() => {
-      if (this.list.length && this.trackList.some((t: Dtrack) => t.unObstructed)) {
-        const node: Dnode = this.list.shift()  // <Dnode>
-        if (node) {
-          // noinspection JSAnnotator
-          node.run().then((n: Dnode) => {
-            n.removeDnode()
-          })
-        }
-      }
-    }, 200)
+      this.playTick()
+    }, __CONFIG__.DanmakuControlConfig.LAUNCH_LOOP_TIME)
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
     return this
+  }
+
+  playTick (): void {
+    if (this.list.length && this.trackList.some((t: Dtrack) => t.unObstructed)) {
+      const node: Dnode = this.list.shift()  // <Dnode>
+      if (node) {
+        // noinspection JSAnnotator
+        node.run().then((n: Dnode) => {
+          // change node status => run complete
+          n.removeDnode()
+        })
+      }
+    }
   }
 
   pause (): DanmakuPlayer {
@@ -123,6 +130,7 @@ export class DanmakuPlayer {
   }
 
   _init (): DanmakuPlayer {
+    this._checkElement()
     this._bindControlStyle()
     this._initTrackList()
     this.playStatus = DanmakuControlPlayStatus.INIT
@@ -130,13 +138,25 @@ export class DanmakuPlayer {
     return this
   }
 
+  _checkElement (): DanmakuPlayer {
+    if (typeof this.el === 'string') {
+      const _el = document.querySelector(this.el)
+      if (_el === null) {
+        throw new Error('Control dom(el) query for no result')
+      } else {
+        this.el = _el
+      }
+    }
+    return this
+  }
+
   _bindControlStyle (): DanmakuPlayer {
-    this.wrap.style.position = 'relative'
-    this.wrap.style.overflow = 'hidden'
-    // this.wrap.style.userSelect = 'none'
-    this.wrap.style.cursor = 'none'
-    this.wrap.style.pointerEvents = 'none'
-    this.wrap.style.verticalAlign = 'baseline'
+    this.el.style.position = 'relative'
+    this.el.style.overflow = 'hidden'
+    // this.el.style.userSelect = 'none'
+    this.el.style.cursor = 'none'
+    this.el.style.pointerEvents = 'none'
+    this.el.style.verticalAlign = 'baseline'
     return this
   }
 

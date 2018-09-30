@@ -1,8 +1,8 @@
 export class DanmakuControlConfig {
-  // todo global config
+  static LAUNCH_LOOP_TIME: number = 100
 }
 
-export class DanmakuControlPlayStatus extends DanmakuControlConfig {
+export class DanmakuControlPlayStatus {
   static EMPTY: number = -1
   static INIT: number = 100
   static STOP: number = 110

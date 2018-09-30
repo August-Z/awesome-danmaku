@@ -38,7 +38,7 @@
 <script type="text/javascript" src="../dist/index.min.js"></script>
 <script type="text/javascript">
   const DanmakuPlayer = AwesomeDanmaku.DanmakuPlayer.getInstanceControl({
-    wrap: document.querySelector('#app'),
+    el: '#app',
     nodeClass: 'danmaku-item',
     trackCount: 12,
     trackHeight: 60,
@@ -75,19 +75,22 @@
   let fontFamily = () => {
     return fontFamilyList[Math.floor(Math.random() * fontFamilyList.length)]
   }
-  let timer = setInterval(() => {
-    DanmakuPlayer.insertDanmaku({
-      text: `这是第${i++}弹幕！！`,
-      color: color(),
-      fontSize: fontSize(),
-      fontFamily: fontFamily()
-    })
-    if (i > 1000) {
-      DanmakuPlayer.pause()
-      setTimeout(() => {
-        DanmakuPlayer.stop()
-      }, 5000)
-      clearInterval(timer)
-    }
-  }, 200)
+
+  const list = []
+  for (let i = 0; i < 100; i++) {
+    list.push(`这是第${i++}弹幕！！`)
+    // DanmakuPlayer.insertDanmaku({
+    //   text: `这是第${i++}弹幕！！`,
+    //   color: color(),
+    //   fontSize: fontSize(),
+    //   fontFamily: fontFamily()
+    // })
+  }
+  DanmakuPlayer.insertDanmaku(list)
+</script>
+<script src="./swiper.js"></script>
+<script>
+  window.onload = () => {
+    console.log(new Swiper('#app', {}))
+  }
 </script>

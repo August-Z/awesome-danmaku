@@ -88,9 +88,9 @@ export class Dnode {
   }
 
   remove (): Dnode {
-    if (this.dom instanceof HTMLElement && this.control.wrap instanceof HTMLElement) {
-      if (this.dom.parentElement === this.control.wrap) {
-        this.control.wrap.removeChild(this.dom)
+    if (this.dom instanceof HTMLElement && this.control.el instanceof HTMLElement) {
+      if (this.dom.parentElement === this.control.el) {
+        this.control.el.removeChild(this.dom)
       } else {
         throw new Error('Control Dom not is node dom parent，Can\'t remove node！')
       }
@@ -180,7 +180,7 @@ export class Dnode {
     if (this.dom instanceof HTMLElement) {
       ctx
         ? ctx.appendChild(this.dom)
-        : this.control.wrap.appendChild(this.dom)
+        : this.control.el.appendChild(this.dom)
       return this
     }
     throw new Error('Dnode needs HTMLElement to render function !')

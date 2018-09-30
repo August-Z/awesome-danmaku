@@ -1,5 +1,5 @@
 declare type DanmakuPlayerOptions = {
-  wrap: ?HTMLElement | string;
+  el: ?HTMLElement | string;
   rollingTime: number | string;
   nodeTag: string;
   nodeClass: string;
