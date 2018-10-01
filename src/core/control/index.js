@@ -1,11 +1,12 @@
 // @flow
-import { Dtrack } from '../track';
-import { initMergeDefaultParams } from "../util/init-options";
-import { Dnode } from "../node";
 import * as __CONFIG__ from "../config";
 import * as __EVENT__ from "../event/control";
+import { Dtrack } from '../track';
+import { Dnode } from "../node";
 import { DanmakuControlPlayStatus } from "../config";
 import { DanmakuControlEventName } from "../config";
+import { initMergeDefaultParams } from "../util/init-options";
+import { DnodeRunStatus } from "../config/node";
 
 /**
  * @author August-Z
@@ -19,12 +20,13 @@ export class DanmakuPlayer {
   rollingTime: number
   nodeTag: string
   nodeClass: string
+  nodeMaxCount: number
   nodeValueKey: any
   trackCount: number
   trackHeight: number
   trackList: Array<Dtrack>
-  list: Array<Dnode>
   nodeList: Array<Dnode>
+  list: Array<DnodeOptions>
   playTimer: any
   cleanTimer: any
   playStatus: number | string
@@ -39,24 +41,24 @@ export class DanmakuPlayer {
     this.playStatus = DanmakuControlPlayStatus.EMPTY
     initMergeDefaultParams(ops, {
       el: document.body,
-      rollingTime: 6000,
-      nodeTag: 'div',
-      nodeClass: '',
-      nodeValueKey: 'value',
-      trackCount: 5,
-      trackHeight: 40,
-      on: {}
+      ...__CONFIG__.DanmakuPlayDefaultConfig.getDefault
     }, this)
     if (ops.hasOwnProperty('list')) {
       this.insertDanmaku(ops.list)
     }
-    this.list = []
-    this.trackList = []
     this._init()
   }
 
   get playerWidth (): number {
     return this.el.clientWidth || 0
+  }
+
+  get hasTasks (): boolean {
+    return (
+      !!this.list.length &&
+      this.trackList.some((t: Dtrack) => t.unObstructed) &&
+      this.nodeList.some((n: Dnode) => n.unObstructed)
+    )
   }
 
   static getInstanceControl (ops: DanmakuPlayerOptions | any): DanmakuPlayer {
@@ -70,10 +72,11 @@ export class DanmakuPlayer {
    * 向弹幕播放器中添加弹幕
    * @param danmaku<Array<DnodeOptions> | DnodeOptions | string>
    */
-  insertDanmaku (danmaku: any): void {
+  insertDanmaku (danmaku: any): Array<DnodeOptions> {
     this.list.push(
-      ...this._handleDanmakuOps(danmaku).map((ops: DnodeOptions) => new Dnode(ops))
+      ...this._handleDanmakuOps(danmaku)
     )
+    return this.list
   }
 
   play (): DanmakuPlayer {
@@ -82,22 +85,20 @@ export class DanmakuPlayer {
     }
     this.playTimer = setInterval(() => {
       this.playTick()
-    }, __CONFIG__.DanmakuControlConfig.LAUNCH_LOOP_TIME)
+    }, Math.round(this.rollingTime / this.nodeMaxCount) + __CONFIG__.TICK_TIME)
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
     return this
   }
 
   playTick (): void {
-    if (this.list.length && this.trackList.some((t: Dtrack) => t.unObstructed)) {
-      const node: Dnode = this.list.shift()  // <Dnode>
-      if (node) {
-        // noinspection JSAnnotator
-        node.run().then((n: Dnode) => {
-          // change node status => run complete
-          n.removeDnode()
-        })
-      }
+    if (this.hasTasks) {
+      const nodeOps: DnodeOptions = this.list.shift()
+      const node: Dnode = this.getUnObstructedNode()
+      node.patch(nodeOps).run().then((n: Dnode) => {
+        // todo run end hook
+        n.runStatus = DnodeRunStatus.RUN_END
+      })
     }
   }
 
@@ -122,17 +123,29 @@ export class DanmakuPlayer {
   }
 
   getUnObstructedTrack (trackIndex?: number): Dtrack {
-    const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed);
+    const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed)
     const index: number = typeof trackIndex === 'number'
       ? trackIndex
       : Math.floor(Math.random() * unObstructedTrackList.length)
     return unObstructedTrackList[index]
   }
 
+  getUnObstructedNode (nodeIndex?: number): Dnode {
+    const unObstructedNodeList: Array<Dnode> = this.nodeList.filter((n: Dnode) => n.unObstructed)
+    const index: number = typeof nodeIndex === 'number'
+      ? nodeIndex
+      : Math.floor(Math.random() * unObstructedNodeList.length)
+    return unObstructedNodeList[index]
+  }
+
   _init (): DanmakuPlayer {
+    this.list = []
+    this.trackList = []
+    this.nodeList = []
     this._checkElement()
     this._bindControlStyle()
     this._initTrackList()
+    this._initNodeList()
     this.playStatus = DanmakuControlPlayStatus.INIT
     this._controlHook(DanmakuControlEventName.INIT)
     return this
@@ -168,6 +181,29 @@ export class DanmakuPlayer {
         height: this.trackHeight
       }))
     }
+    return this
+  }
+
+  _initNodeList (): DanmakuPlayer {
+    let nodeListHTML: string = ''
+    const nodeTag: string = this.nodeTag.toLowerCase()
+    for (let i = 0; i < this.nodeMaxCount; i++) {
+      // language=HTML
+      nodeListHTML += `<${nodeTag} class="${this.nodeClass}"></${nodeTag}>`
+    }
+    this.el.innerHTML = nodeListHTML
+    setTimeout(() => {
+      const domCollection: HTMLCollection<HTMLElement> = this.el.getElementsByClassName(this.nodeClass)
+      this.nodeList = Array.prototype.slice
+        .call(domCollection)
+        .map((nodeDom: HTMLElement) => {
+          return new Dnode({
+            control: this,
+            text: '',
+            ...__CONFIG__.DnodeDefaultConfig.getDefault
+          }).init(nodeDom)
+        })
+    }, __CONFIG__.TICK_TIME)
     return this
   }
 

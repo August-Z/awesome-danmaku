@@ -8,7 +8,7 @@ export default {
   DanmakuPlayer
 }
 
-if (window) {
+if (window && window['AwesomeDanmaku'] === undefined) {
   window.AwesomeDanmaku = {
     DanmakuPlayer
   }

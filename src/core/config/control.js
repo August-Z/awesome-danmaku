@@ -1,7 +1,3 @@
-export class DanmakuControlConfig {
-  static LAUNCH_LOOP_TIME: number = 100
-}
-
 export class DanmakuControlPlayStatus {
   static EMPTY: number = -1
   static INIT: number = 100

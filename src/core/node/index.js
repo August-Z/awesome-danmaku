@@ -3,6 +3,7 @@ import * as __CONFIG__ from "../config"
 import { translateTextToSize } from "../util/text-size";
 import { Dtrack } from "../track";
 import { DanmakuPlayer } from "../control";
+import { DnodeRunStatus } from "../config/node";
 
 export class Dnode {
   control: DanmakuPlayer
@@ -17,27 +18,24 @@ export class Dnode {
   translateX: number
   launchTime: number
   dom: HTMLElement
+  runStatus: number
 
   static instanceTextSizeDom: HTMLElement
 
   constructor (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
-    if (typeof ops === 'string') {
-      this.text = ops
-      this.control = control
-      // todo extend control style
-    } else if (ops instanceof Object) {
-      this.text = ops.text
-      this.control = ops.control
-      this.fontSize = ops.fontSize
-      this.fontFamily = ops.fontFamily
-      this.color = ops.color
-      this.speed = ops.speed
-    } else {
-      throw new Error('Dnode ops bad !')
-    }
-    this._init()
+    this.runStatus = DnodeRunStatus.EMPTY
+    this._init(ops, control)
   }
 
+  get unObstructed (): boolean {
+    return [DnodeRunStatus.INIT, DnodeRunStatus.RUN_END].includes(this.runStatus)
+  }
+
+  /**
+   * 用于计算弹幕节点尺寸的单例 DOM 模版
+   * @param ops<DnodeTemplateDom>
+   * @returns {HTMLElement}
+   */
   static getInstanceTemplateDom (ops: DnodeTemplateDom = {
     fontSize: __CONFIG__.DnodeDefaultConfig.FONT_SIZE + 'px',
     fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY
@@ -62,20 +60,35 @@ export class Dnode {
     return Dnode.instanceTextSizeDom
   }
 
-  /**
-   * 开始滚动
-   */
+  init (el: HTMLElement): Dnode {
+    this.dom = el
+    this.runStatus = DnodeRunStatus.INIT
+    return this
+  }
+
+  patch (ops: string | DnodeOptions): Dnode {
+    this._init(ops)
+    this._computedTextSize()
+    this._computedTotalDistance()
+    this._joinTrack()
+    this._editText()
+    return this
+  }
+
   run (): any {
     return new Promise((resolve, reject) => {
-      this._joinTrack()._patch()._render()
+      this._draw()
+      this.runStatus = DnodeRunStatus.READY
       try {
         this.track.rolling((t) => {
-          this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
+          this.launch()
+          this.runStatus = DnodeRunStatus.RUNNING
           setTimeout(() => {
             t.stopRolling()
+            this.runStatus = DnodeRunStatus.LAUNCHED
           }, this.launchTime)
           setTimeout(() => {
-            this.remove()
+            this.flyBack()
             resolve(this)
           }, this.control.rollingTime)
         })
@@ -87,27 +100,40 @@ export class Dnode {
     })
   }
 
-  remove (): Dnode {
-    if (this.dom instanceof HTMLElement && this.control.el instanceof HTMLElement) {
-      if (this.dom.parentElement === this.control.el) {
-        this.control.el.removeChild(this.dom)
-      } else {
-        throw new Error('Control Dom not is node dom parent，Can\'t remove node！')
-      }
+  /**
+   * Dnode 正式开始运动，发射
+   */
+  launch (): Dnode {
+    this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
+    return this
+  }
+
+  /**
+   * Dnode 运动完毕，隐藏并归位
+   */
+  flyBack (): Dnode {
+    this.dom.innerText = ''   // ?? 是否需要有待测试
+    this.dom.style.display = `none`
+    this.dom.style.transform = `translate3d(0, 0, 0)`
+    this.dom.style.transition = `transform 0ms linear 0s`
+    return this
+  }
+
+  _init (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
+    if (typeof ops === 'string') {
+      this.text = ops
+      this.control = control
+      // todo extend control style
+    } else if (ops instanceof Object) {
+      this.text = ops.text
+      this.control = ops.control
+      this.fontSize = ops.fontSize
+      this.fontFamily = ops.fontFamily
+      this.color = ops.color
+      this.speed = ops.speed
     } else {
-      throw new TypeError('Control Dom or Node Dom not HTMLElement !')
+      throw new Error('Dnode ops bad !')
     }
-    return this
-  }
-
-  removeDnode (): void {
-    delete this
-  }
-
-  _init (): Dnode {
-    this._computedTextSize()
-    this._computedTotalDistance()
-    return this
   }
 
   _computedTextSize (): void {
@@ -135,14 +161,19 @@ export class Dnode {
     return this
   }
 
+  _editText (): Dnode {
+    this.dom.innerText = this.text
+    return this
+  }
+
   /**
-   * 修补节点 attr、style 并创建 DOM
+   * 重绘样式
    * @returns {Dnode}
    */
-  _patch (): Dnode {
-    const nodeDom: HTMLElement = document.createElement(this.control.nodeTag)
-    nodeDom.className = this.control.nodeClass
-    nodeDom.innerText = this.text
+  _draw (): Dnode {
+    if (!(this.dom instanceof HTMLElement)) {
+      throw new Error('Draw error: dom not instanceof HTMLElement !')
+    }
     const patchStyle = {
       display: 'inline-block',
       width: `${this.width}px`,
@@ -163,26 +194,10 @@ export class Dnode {
       cursor: 'none',
       pointerEvents: 'none'
     }
-    const style: CSSStyleDeclaration = nodeDom.style
+    const style: CSSStyleDeclaration = this.dom.style
     Object.entries(patchStyle).forEach(([k, v]: any): void => {
       style[k] = v
     })
-    this.dom = nodeDom
     return this
-  }
-
-  /**
-   * 渲染 dom
-   * @param ctx
-   * @returns {Dnode}
-   */
-  _render (ctx?: HTMLElement): Dnode {
-    if (this.dom instanceof HTMLElement) {
-      ctx
-        ? ctx.appendChild(this.dom)
-        : this.control.el.appendChild(this.dom)
-      return this
-    }
-    throw new Error('Dnode needs HTMLElement to render function !')
   }
 }

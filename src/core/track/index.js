@@ -31,15 +31,15 @@ export class Dtrack {
    * @param nodeHeight<number>
    * @returns {number}
    */
-  getTopByMiddleDnode (nodeHeight: number) {
+  getTopByMiddleDnode (nodeHeight: number): number {
     return this.offsetTop + (this.height - nodeHeight) / 2
   }
 
-  get obstructed () {
+  get obstructed (): boolean {
     return this.status === Dtrack.ROLLING
   }
 
-  get unObstructed () {
+  get unObstructed (): boolean {
     return this.status === Dtrack.UN_ROLLING
   }
 }

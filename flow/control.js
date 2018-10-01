@@ -3,6 +3,7 @@ declare type DanmakuPlayerOptions = {
   rollingTime: number | string;
   nodeTag: string;
   nodeClass: string;
+  nodeMaxCount: number;
   nodeValueKey: number | string;
   trackCount: number;
   trackHeight: number | string;

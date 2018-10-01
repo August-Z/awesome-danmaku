@@ -1,5 +1,12 @@
 // @flow
 
+/**
+ * 融合构造配置项的传入与默认值，没有上下文时返回融合对象
+ * @param ops
+ * @param defaultOps
+ * @param ctx
+ * @returns {Object}
+ */
 export function initMergeDefaultParams (ops: Object, defaultOps: Object, ctx?: Object): Object {
   if (!(ops instanceof Object) || !(defaultOps instanceof Object)) {
     throw new TypeError('params must instanceof Object !')
