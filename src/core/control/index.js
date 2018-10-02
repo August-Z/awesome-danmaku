@@ -16,6 +16,8 @@ import { DnodeRunStatus } from "../config/node";
  */
 export class DanmakuPlayer {
 
+  _loopTime: number
+
   el: HTMLElement
   rollingTime: number
   nodeTag: string
@@ -24,28 +26,25 @@ export class DanmakuPlayer {
   nodeValueKey: any
   trackCount: number
   trackHeight: number
-  trackList: Array<Dtrack>
-  nodeList: Array<Dnode>
-  list: Array<DnodeOptions>
+  trackList: Array<Dtrack> = []
+  nodeList: Array<Dnode> = []
+  list: Array<DnodeOptions> = []
   playTimer: any
   cleanTimer: any
   playStatus: number | string
   on: { [key: any]: Function }
 
+  static __lock__: boolean
   static instanceControl: DanmakuPlayer
 
-  constructor (ops: DanmakuPlayerOptions) {
+  constructor (ops: DanmakuPlayerOptions | HTMLElement | string) {
     if (!window) {
-      throw new Error('请在浏览器环境下运行')
+      throw new Error('Please run in browser support.')
+    } else if (DanmakuPlayer.__lock__ !== true) {
+      throw new Error('Please use the \"getPlayer\" function instead of creating objects.')
     }
     this.playStatus = DanmakuControlPlayStatus.EMPTY
-    initMergeDefaultParams(ops, {
-      el: document.body,
-      ...__CONFIG__.DanmakuPlayDefaultConfig.getDefault
-    }, this)
-    if (ops.hasOwnProperty('list')) {
-      this.insertDanmaku(ops.list)
-    }
+    this._handleOptions(ops)
     this._init()
   }
 
@@ -61,8 +60,9 @@ export class DanmakuPlayer {
     )
   }
 
-  static getInstanceControl (ops: DanmakuPlayerOptions | any): DanmakuPlayer {
+  static getPlayer (ops: DanmakuPlayerOptions | any): DanmakuPlayer {
     if (!DanmakuPlayer.instanceControl) {
+      DanmakuPlayer.__lock__ = true
       DanmakuPlayer.instanceControl = new DanmakuPlayer(ops)
     }
     return DanmakuPlayer.instanceControl
@@ -72,7 +72,7 @@ export class DanmakuPlayer {
    * 向弹幕播放器中添加弹幕
    * @param danmaku<Array<DnodeOptions> | DnodeOptions | string>
    */
-  insertDanmaku (danmaku: any): Array<DnodeOptions> {
+  insert (danmaku: any): Array<DnodeOptions> {
     this.list.push(
       ...this._handleDanmakuOps(danmaku)
     )
@@ -85,7 +85,7 @@ export class DanmakuPlayer {
     }
     this.playTimer = setInterval(() => {
       this.playTick()
-    }, Math.round(this.rollingTime / this.nodeMaxCount) + __CONFIG__.TICK_TIME)
+    }, this._loopTime)
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
     return this
@@ -138,16 +138,40 @@ export class DanmakuPlayer {
     return unObstructedNodeList[index]
   }
 
+  _handleOptions (ops: DanmakuPlayerOptions | HTMLElement | string): DanmakuPlayer {
+    const playerDefaultConfig = __CONFIG__.DanmakuPlayDefaultConfig.getDefault
+    if (typeof ops === 'string' || ops instanceof HTMLElement) {
+      initMergeDefaultParams({}, {
+        el: ops,
+        ...playerDefaultConfig
+      }, this)
+    } else if (ops instanceof Object || Object.prototype.toString.call(ops) === '[object Object]') {
+      initMergeDefaultParams(ops, {
+        el: document.body,
+        ...playerDefaultConfig
+      }, this)
+      if (ops.hasOwnProperty('list')) {
+        this.insert(ops.list)
+      }
+    } else {
+      throw new Error('Control error, bad param(options) !')
+    }
+    return this
+  }
+
   _init (): DanmakuPlayer {
-    this.list = []
-    this.trackList = []
-    this.nodeList = []
+    this._initSelfConfig()
     this._checkElement()
     this._bindControlStyle()
     this._initTrackList()
     this._initNodeList()
     this.playStatus = DanmakuControlPlayStatus.INIT
     this._controlHook(DanmakuControlEventName.INIT)
+    return this
+  }
+
+  _initSelfConfig (): DanmakuPlayer {
+    this._loopTime = Number(Math.round(this.rollingTime / this.nodeMaxCount) + __CONFIG__.TICK_TIME)
     return this
   }
 
@@ -159,14 +183,16 @@ export class DanmakuPlayer {
       } else {
         this.el = _el
       }
+    } else if (!(this.el instanceof HTMLElement)) {
+      throw new Error('Control[el] not is HTMLElement, check code !')
     }
     return this
   }
 
   _bindControlStyle (): DanmakuPlayer {
+    // this.el.style.userSelect = 'none'
     this.el.style.position = 'relative'
     this.el.style.overflow = 'hidden'
-    // this.el.style.userSelect = 'none'
     this.el.style.cursor = 'none'
     this.el.style.pointerEvents = 'none'
     this.el.style.verticalAlign = 'baseline'
@@ -187,6 +213,7 @@ export class DanmakuPlayer {
   _initNodeList (): DanmakuPlayer {
     let nodeListHTML: string = ''
     const nodeTag: string = this.nodeTag.toLowerCase()
+    debugger
     for (let i = 0; i < this.nodeMaxCount; i++) {
       // language=HTML
       nodeListHTML += `<${nodeTag} class="${this.nodeClass}"></${nodeTag}>`
@@ -235,7 +262,7 @@ export class DanmakuPlayer {
         ...__CONFIG__.DnodeDefaultConfig.getDefault
       })
     } else {
-      throw new TypeError('Bad param!')
+      throw new TypeError('TransformDnodeOps error, Bad param!')
     }
   }
 

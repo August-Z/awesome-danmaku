@@ -17,12 +17,13 @@ export class Dnode {
   speed: number
   translateX: number
   launchTime: number
+  totalTime: number
   dom: HTMLElement
   runStatus: number
 
   static instanceTextSizeDom: HTMLElement
 
-  constructor (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
+  constructor (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getPlayer()) {
     this.runStatus = DnodeRunStatus.EMPTY
     this._init(ops, control)
   }
@@ -90,7 +91,7 @@ export class Dnode {
           setTimeout(() => {
             this.flyBack()
             resolve(this)
-          }, this.control.rollingTime)
+          }, this.totalTime)
         })
       } catch (e) {
         reject(e)
@@ -119,7 +120,7 @@ export class Dnode {
     return this
   }
 
-  _init (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getInstanceControl()) {
+  _init (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getPlayer()) {
     if (typeof ops === 'string') {
       this.text = ops
       this.control = control
@@ -149,6 +150,7 @@ export class Dnode {
     const totalDis: number = this.control.playerWidth + this.width
     this.translateX = (-1) * totalDis
     this.launchTime = Math.round(this.control.rollingTime * (this.width / totalDis))
+    this.totalTime = Math.round(this.control.rollingTime / this.speed)
   }
 
   /**
@@ -186,7 +188,7 @@ export class Dnode {
       left: `${this.control.playerWidth}px`,
       opacity: '1',
       transform: `translate3d(0, 0, 0)`,
-      transition: `transform ${Math.round(this.control.rollingTime / this.speed)}ms linear 0s`,
+      transition: `transform ${this.totalTime}ms linear 0s`,
       position: 'absolute',
       userSelect: 'none',
       whiteSpace: 'pre',

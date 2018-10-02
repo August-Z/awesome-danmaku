@@ -17,7 +17,7 @@ export class DnodeDefaultConfig {
 export class DanmakuPlayDefaultConfig {
   static ROLLING_TIME: number = 6000
   static NODE_TAG: string = 'p'
-  static NODE_CLASS: string = ''
+  static NODE_CLASS: string = 'awesome-danmaku-item'
   static NODE_MAX_COUNT: number = 25
   static NODE_VALUE_KEY: string = 'value'
   static TRACK_COUNT: number = 5

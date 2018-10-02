@@ -1,15 +1,15 @@
 import { DanmakuPlayer } from './core/control'
 
 module.exports = {
-  DanmakuPlayer
+  control: DanmakuPlayer
 }
 
 export default {
-  DanmakuPlayer
+  control: DanmakuPlayer
 }
 
 if (window && window['AwesomeDanmaku'] === undefined) {
   window.AwesomeDanmaku = {
-    DanmakuPlayer
+    control: DanmakuPlayer
   }
 }

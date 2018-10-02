@@ -16,24 +16,30 @@
       width: 100%;
       min-height: 100vh;
       display: flex;
+      flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
     }
 
-    #app {
-      /*width: 1024px;*/
-      /*height: 576px;*/
-      width: 100vw;
-      height: 100vh;
+    #demo-a {
+      width: 95vw;
+      height: 45vh;
+      margin-bottom: 2.5vh;
+      background-color: #333;
+    }
+
+    #demo-b {
+      width: 95vw;
+      height: 45vh;
       background-color: #333;
     }
   </style>
 </head>
 <body>
-<div id="app">
-
-</div>
+<div id="demo-a"></div>
+<div id="demo-b"></div>
 </body>
 </html>
 <script type="text/javascript" src="../dist/index.min.js"></script>
-<script type="text/javascript" src="./index.js"></script>
+<script type="text/javascript" src="./demo-a.js"></script>
+<script type="text/javascript" src="./demo-b.js"></script>
