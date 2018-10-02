@@ -19,7 +19,7 @@ $ npm install awesome-danmaku
 ```js
 const DanmakuControl = require('awesome-danmaku').control
 
-const danmakuPlayer = DanmakuControl.getPlay('#app')
+const danmakuPlayer = DanmakuControl.getPlayer('#app')
 
 danmakuPlayer.play()
   .insert('Hello')
@@ -34,15 +34,24 @@ danmakuPlayer.insert({
 使用一些配置项
 
 ```js
-const DanmakuControl = require('awesome-danmaku').control
-
-const DanmakuPlayer = DanmakuControl.getPlay({
-  el: '#app',
-  nodeClass: 'danmaku-item',
-  nodeMaxCount: 25,
-  rollingTime: 6000,
-  trackCount: 10,
-  trackHeight: 60,
+const danmakuPlayer = DanmakuControl.getPlayer({
+  el: '#demo-b',
+  rollingTime: 3000,
+  nodeTag: 'div',
+  nodeClass: 'demo-b-item',
+  nodeMaxCount: 10,
   nodeValueKey: 'text',
+  trackList: 7,
+  trackHeight: 70,
+  on: {
+    play () {
+      console.log('Demo-b Start playing ！！')
+    }
+  }
 })
+
+danmakuPlayer.insert({
+  text: 'used some config'
+})
+
 ```
