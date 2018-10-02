@@ -14,11 +14,29 @@ $ npm install awesome-danmaku
 
 ## 使用
 
-创建弹幕控制器
+最简易的起步
 
 ```js
-const danmaku = require('awesome-danmaku')
-const DanmakuPlayer = danmaku.control.getInstanceControl({
+const DanmakuControl = require('awesome-danmaku').control
+
+const danmakuPlayer = DanmakuControl.getPlay('#app')
+
+danmakuPlayer.play()
+  .insert('Hello')
+  .insert('Awesome Danmaku !')
+  
+danmakuPlayer.insert({
+  value: 'I feel good.'
+})
+  
+```
+
+使用一些配置项
+
+```js
+const DanmakuControl = require('awesome-danmaku').control
+
+const DanmakuPlayer = DanmakuControl.getPlay({
   el: '#app',
   nodeClass: 'danmaku-item',
   nodeMaxCount: 25,
