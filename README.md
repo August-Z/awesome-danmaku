@@ -4,7 +4,7 @@
 
 
 ## awesome-danmaku 是什么
-awesome-danmaku 是一款重点前端各种弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
+awesome-danmaku 是一款解决前端弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
 
 
 ## 下载
