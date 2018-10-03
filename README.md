@@ -17,10 +17,20 @@ $ npm install awesome-danmaku
 最简易的起步
 
 ```js
+// use CommonJS
 const DanmakuControl = require('awesome-danmaku').control
 
 const danmakuPlayer = DanmakuControl.getPlayer('#app')
 
+
+// use ES module
+import Danmaku from 'awesome-danmaku'
+
+const danmakuPlayer = Danmaku.control.getPlayer('#app')
+
+
+// 调用 play 即可开始不断发送弹幕，insert 可以插入弹幕
+// 这两个主要动作没有先后次序的要求，你亦可以先插入后再启动控制器
 danmakuPlayer.play()
   .insert('Hello')
   .insert('Awesome Danmaku !')
@@ -28,6 +38,12 @@ danmakuPlayer.play()
 danmakuPlayer.insert({
   value: 'I feel good.'
 })
+
+// 暂停运行
+danmakuPlayer.pause()
+
+// 清空当前已插入的弹幕列表
+danmakuPlayer.clearList()
   
 ```
 
@@ -55,3 +71,8 @@ danmakuPlayer.insert({
 })
 
 ```
+
+
+## 配置
+
+TODO 编写中...
