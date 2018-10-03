@@ -1,5 +1,6 @@
 # awesome-danmaku
-[![npm](https://img.shields.io/npm/v/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.com/package/awesome-danmaku)
+[![npm version](https://img.shields.io/npm/v/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.org/package/awesome-danmaku)
+[![npm downloads](https://img.shields.io/npm/dm/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.com/package/awesome-danmaku)
 
 
 ## awesome-danmaku 是什么
