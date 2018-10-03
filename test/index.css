@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+#demo-a {
+  width: 90vw;
+  height: 44vh;
+  margin-bottom: 4vh;
+  background-color: #333;
+}
+
+#demo-b {
+  width: 90vw;
+  height: 44vh;
+  background-color: #333;
+}

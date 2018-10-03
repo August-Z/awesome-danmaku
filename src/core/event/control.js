@@ -2,7 +2,7 @@
 import { DanmakuControlEventName } from "../config";
 import { DanmakuEvent } from "./event";
 
-class DanmakuControlEvent extends DanmakuEvent {
+export class DanmakuControlEvent extends DanmakuEvent {
 
   constructor (ops: any) {
     super(ops)
@@ -10,7 +10,7 @@ class DanmakuControlEvent extends DanmakuEvent {
 
   hook (hook: string, cb: Function): void {
     if (this.hooks.has(hook)) {
-      cb()
+      cb(this, hook)
       return
     }
     throw new Error(`[Event Error]: Hook error, Not has ${hook} event !`)

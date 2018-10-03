@@ -1,50 +1,31 @@
-const path = require('path')
+'use strict'
+
+process.env.NODE_ENV = 'production'
+
+const ora = require('ora')
+const chalk = require('chalk')
 const webpack = require('webpack')
+const webpackConfig = require('./webpack.prod.conf')
 const npmCfg = require('../package.json')
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+const spinner = ora('building for production...')
+spinner.start()
 
-const banner = [
-  npmCfg.name + ' v' + npmCfg.version,
-  '(c) ' + (new Date().getFullYear()) + ' ' + npmCfg.author,
-  npmCfg.homepage
-].join('\n')
+webpack(webpackConfig, (err, stats) => {
+  spinner.stop()
+  if (err) throw err
+  process.stdout.write(stats.toString({
+    colors: true,
+    modules: false,
+    children: false,
+    chunks: false,
+    chunkModules: false
+  }) + '\n\n')
 
-const config = {
-  entry: path.resolve(__dirname, '../') + '/src',
-  output: {
-    filename: 'index.min.js',
-    path: path.resolve(__dirname, '../') + '/dist',
-    libraryTarget: 'umd'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        loader: 'babel-loader',
-        include: [resolve('src')],
-        exclude: /node_modules/
-      }
-    ]
-  },
-  node: {
-    setImmediate: false,
-    dgram: 'empty',
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
-    child_process: 'empty'
-  },
-  plugins: [
-    new webpack.BannerPlugin(banner),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
-  ]
-}
+  if (stats.hasErrors()) {
+    console.log(chalk.red('Build failed with errors.\n'))
+    process.exit(1)
+  }
 
-module.exports = config
+  console.log(chalk.cyan(`Build complete of version: v${npmCfg.version}\n`))
+})

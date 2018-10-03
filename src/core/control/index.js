@@ -7,6 +7,7 @@ import { DanmakuControlPlayStatus } from "../config";
 import { DanmakuControlEventName } from "../config";
 import { initMergeDefaultParams } from "../util/init-options";
 import { DnodeRunStatus } from "../config/node";
+import { DanmakuControlEvent } from "../event";
 
 /**
  * @author August-Z
@@ -191,6 +192,7 @@ export class DanmakuPlayer {
 
   _bindControlStyle (): DanmakuPlayer {
     // this.el.style.userSelect = 'none'
+    console.log(this.el.style.position === '', this.el.style.position, this)
     this.el.style.position = 'relative'
     this.el.style.overflow = 'hidden'
     this.el.style.cursor = 'none'
@@ -213,7 +215,6 @@ export class DanmakuPlayer {
   _initNodeList (): DanmakuPlayer {
     let nodeListHTML: string = ''
     const nodeTag: string = this.nodeTag.toLowerCase()
-    debugger
     for (let i = 0; i < this.nodeMaxCount; i++) {
       // language=HTML
       nodeListHTML += `<${nodeTag} class="${this.nodeClass}"></${nodeTag}>`
@@ -266,10 +267,10 @@ export class DanmakuPlayer {
     }
   }
 
-  _controlHook (eventName: string): void {
-    if (this.on.hasOwnProperty(eventName) && typeof this.on[eventName] === 'function') {
-      __EVENT__.controlEmitter.hook(DanmakuControlEventName.INIT, () => {
-        this.on[eventName](this)
+  _controlHook (hookName: string): void {
+    if (this.on.hasOwnProperty(hookName) && typeof this.on[hookName] === 'function') {
+      __EVENT__.controlEmitter.hook(hookName, (emitter: DanmakuControlEvent, hook: string) => {
+        this.on[hookName](this, emitter, hook)
       })
     }
   }
