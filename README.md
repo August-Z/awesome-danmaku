@@ -1,9 +1,10 @@
 # awesome-danmaku
-[![npm](https://img.shields.io/npm/v/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.com/package/awesome-danmaku)
+[![npm version](https://img.shields.io/npm/v/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.org/package/awesome-danmaku)
+[![npm downloads](https://img.shields.io/npm/dm/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.com/package/awesome-danmaku)
 
 
 ## awesome-danmaku 是什么
-awesome-danmaku 是一款重点前端各种弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
+awesome-danmaku 是一款解决前端弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
 
 
 ## 下载
