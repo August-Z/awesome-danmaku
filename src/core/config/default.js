@@ -3,6 +3,8 @@ export class DnodeDefaultConfig {
   static FONT_FAMILY: string = 'SimHei'
   static COLOR: string = '#FFFFFF'
   static SPEED: number = 1.0
+  static FONT_WEIGHT: string = 'normal'
+  static OPACITY: string = '1'
 
   static get getDefault (): Object {
     return {
@@ -10,6 +12,8 @@ export class DnodeDefaultConfig {
       fontFamily: DnodeDefaultConfig.FONT_FAMILY,
       color: DnodeDefaultConfig.COLOR,
       speed: DnodeDefaultConfig.SPEED,
+      fontWeight: DnodeDefaultConfig.FONT_WEIGHT,
+      opacity: DnodeDefaultConfig.OPACITY
     }
   }
 }

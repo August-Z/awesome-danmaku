@@ -10,6 +10,7 @@ body {
   flex-flow: column nowrap;
   justify-content: center;
   align-items: center;
+  background-color: #000;
 }
 
 #demo-a {

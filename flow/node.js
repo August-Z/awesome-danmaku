@@ -3,6 +3,8 @@ declare type DnodeOptions = {
   text: string;
   fontSize: number | string;
   fontFamily: string;
+  fontWeight: number | string;
+  opacity: number | string;
   color: string;
   speed: number;
 }
@@ -15,4 +17,5 @@ declare type DnodeSize = {
 declare type DnodeTemplateDom = {
   fontSize: string;
   fontFamily: string;
+  fontWeight: number | string;
 }

@@ -81,14 +81,23 @@ export class DanmakuPlayer {
   }
 
   play (): DanmakuPlayer {
+
     if (!Array.isArray(this.list)) {
       throw new TypeError('list must instanceof Array')
+    } else if (['static', 'static !important', ''].includes(getComputedStyle(this.el).position)) {
+      throw new Error(
+        'Play error! el (wrap dom) position can\'t is static or empty, \n' +
+        'Please set \"relative\"、\"absolute\" or \"fixed\".'
+      )
     }
+
+    // eval
     this.playTimer = setInterval(() => {
       this.playTick()
     }, this._loopTime)
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
+
     return this
   }
 
@@ -98,7 +107,6 @@ export class DanmakuPlayer {
       const node: Dnode = this.getUnObstructedNode()
       node.patch(nodeOps).run().then((n: Dnode) => {
         // todo run end hook
-        n.runStatus = DnodeRunStatus.RUN_END
       })
     }
   }
@@ -119,7 +127,9 @@ export class DanmakuPlayer {
   }
 
   clearList (): DanmakuPlayer {
-    this.list = []
+    if (Array.isArray(this.list) && this.list.length) {
+      this.list = []
+    }
     return this
   }
 
@@ -191,9 +201,9 @@ export class DanmakuPlayer {
   }
 
   _bindControlStyle (): DanmakuPlayer {
-    // this.el.style.userSelect = 'none'
-    console.log(this.el.style.position === '', this.el.style.position, this)
-    this.el.style.position = 'relative'
+    if (['', 'static'].includes(getComputedStyle(this.el).position)) {
+      this.el.style.position = 'relative'
+    }
     this.el.style.overflow = 'hidden'
     this.el.style.cursor = 'none'
     this.el.style.pointerEvents = 'none'

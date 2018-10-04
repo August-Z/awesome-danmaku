@@ -13,6 +13,8 @@ export class Dnode {
   height: number
   fontSize: number | string
   fontFamily: string
+  fontWeight: number | string
+  opacity: number | string
   color: string
   speed: number
   translateX: number
@@ -23,13 +25,40 @@ export class Dnode {
 
   static instanceTextSizeDom: HTMLElement
 
-  constructor (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getPlayer()) {
+  constructor (ops: DnodeOptions) {
     this.runStatus = DnodeRunStatus.EMPTY
-    this._init(ops, control)
+    this._init(ops)
   }
 
   get unObstructed (): boolean {
-    return [DnodeRunStatus.INIT, DnodeRunStatus.RUN_END].includes(this.runStatus)
+    return [
+      DnodeRunStatus.INIT,
+      DnodeRunStatus.RUN_END
+    ].includes(this.runStatus)
+  }
+
+  get drawStyle (): { [key: string]: string | number } {
+    return {
+      display: 'inline-block',
+      width: `${this.width}px`,
+      height: `${this.height}px`,
+      lineHeight: '1.125',
+      fontSize: `${this.fontSize}px`,
+      fontFamily: this.fontFamily,
+      fontWeight: this.fontWeight,
+      color: this.color,
+      top: `${this.track.getTopByMiddleDnode(this.height)}px`,
+      left: `${this.control.playerWidth}px`,
+      opacity: this.opacity + '',
+      transform: `translate3d(0, 0, 0)`,
+      transition: `transform ${this.totalTime}ms linear 0s`,
+      position: 'absolute',
+      userSelect: 'none',
+      whiteSpace: 'pre',
+      perspective: '500px',
+      cursor: 'none',
+      pointerEvents: 'none'
+    }
   }
 
   /**
@@ -39,24 +68,41 @@ export class Dnode {
    */
   static getInstanceTemplateDom (ops: DnodeTemplateDom = {
     fontSize: __CONFIG__.DnodeDefaultConfig.FONT_SIZE + 'px',
-    fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY
+    fontFamily: __CONFIG__.DnodeDefaultConfig.FONT_FAMILY,
+    fontWeight: __CONFIG__.DnodeDefaultConfig.FONT_WEIGHT,
   }): HTMLElement {
     if (!Dnode.instanceTextSizeDom) {
-      const template: HTMLElement = document.createElement('span')
-      template.style.position = 'absolute'
-      template.style.visibility = 'hidden'
-      template.style.display = 'inline-block'
-      template.style.fontSize = ops.fontSize
-      template.style.fontFamily = ops.fontFamily
+
+      // create template
+      const template: HTMLElement = document.createElement('div')
+      const templateStyle = {
+        position: 'fixed',
+        visibility: 'hidden',
+        display: 'inline-block',
+        zIndex: '-1',
+        whiteSpace: 'pre',
+        ...ops
+      }
+      template.className = 'awesome-danmaku-template'
+      Object.entries(templateStyle).forEach(([k, v]: any): void => {
+        template.style[k] = v
+      })
+
+      // insert dom to html
       if (document.body) {
         document.body.appendChild(template)
+      } else if (DanmakuPlayer.getPlayer().el instanceof HTMLElement) {
+        DanmakuPlayer.getPlayer().el.appendChild(template)
       } else {
-        throw new Error('Template DOM Error: document.body missing !!')
+        throw new Error('Template DOM Error! [document.body] missing or Not control wrap Dom!!')
       }
       Dnode.instanceTextSizeDom = template
+
     } else {
-      Dnode.instanceTextSizeDom.style.fontSize = ops.fontSize
-      Dnode.instanceTextSizeDom.style.fontFamily = ops.fontFamily
+      // change style, and resize
+      Object.entries(ops).forEach(([k, v]: any): void => {
+        Dnode.instanceTextSizeDom.style[k] = v
+      })
     }
     return Dnode.instanceTextSizeDom
   }
@@ -67,7 +113,7 @@ export class Dnode {
     return this
   }
 
-  patch (ops: string | DnodeOptions): Dnode {
+  patch (ops: DnodeOptions): Dnode {
     this._init(ops)
     this._computedTextSize()
     this._computedTotalDistance()
@@ -78,18 +124,25 @@ export class Dnode {
 
   run (): any {
     return new Promise((resolve, reject) => {
+      // 重绘节点，此处 Status => Ready
       this._draw()
       this.runStatus = DnodeRunStatus.READY
       try {
         this.track.rolling((t) => {
+          // 发射弹幕，此处 Status => Running
           this.launch()
           this.runStatus = DnodeRunStatus.RUNNING
+
+          // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched
           setTimeout(() => {
             t.stopRolling()
             this.runStatus = DnodeRunStatus.LAUNCHED
           }, this.launchTime)
+
+          // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
           setTimeout(() => {
             this.flyBack()
+            this.runStatus = DnodeRunStatus.RUN_END
             resolve(this)
           }, this.totalTime)
         })
@@ -120,30 +173,29 @@ export class Dnode {
     return this
   }
 
-  _init (ops: string | DnodeOptions, control?: DanmakuPlayer = DanmakuPlayer.getPlayer()) {
-    if (typeof ops === 'string') {
-      this.text = ops
-      this.control = control
-      // todo extend control style
-    } else if (ops instanceof Object) {
+  _init (ops: DnodeOptions): void {
+    if (ops instanceof Object) {
       this.text = ops.text
       this.control = ops.control
       this.fontSize = ops.fontSize
       this.fontFamily = ops.fontFamily
+      this.fontWeight = ops.fontWeight
+      this.opacity = ops.opacity
       this.color = ops.color
       this.speed = ops.speed
     } else {
-      throw new Error('Dnode ops bad !')
+      throw new Error('Init error: Dnode ops bad !')
     }
   }
 
   _computedTextSize (): void {
     const { width, height } = translateTextToSize(this.text, Dnode.getInstanceTemplateDom({
       fontSize: this.fontSize + 'px',
-      fontFamily: this.fontFamily
+      fontFamily: this.fontFamily,
+      fontWeight: this.fontWeight,
     }))
     this.width = width
-    this.height = height
+    this.height = this.control.trackHeight || height
   }
 
   _computedTotalDistance (): void {
@@ -176,30 +228,11 @@ export class Dnode {
     if (!(this.dom instanceof HTMLElement)) {
       throw new Error('Draw error: dom not instanceof HTMLElement !')
     }
-    const patchStyle = {
-      display: 'inline-block',
-      width: `${this.width}px`,
-      height: `${this.height}px`,
-      lineHeight: '1.125',
-      fontSize: `${this.fontSize}px`,
-      fontFamily: this.fontFamily,
-      color: this.color,
-      top: `${this.track.getTopByMiddleDnode(this.height)}px`,
-      left: `${this.control.playerWidth}px`,
-      opacity: '1',
-      transform: `translate3d(0, 0, 0)`,
-      transition: `transform ${this.totalTime}ms linear 0s`,
-      position: 'absolute',
-      userSelect: 'none',
-      whiteSpace: 'pre',
-      perspective: '500px',
-      cursor: 'none',
-      pointerEvents: 'none'
-    }
     const style: CSSStyleDeclaration = this.dom.style
-    Object.entries(patchStyle).forEach(([k, v]: any): void => {
+    Object.entries(this.drawStyle).forEach(([k, v]: any): void => {
       style[k] = v
     })
     return this
   }
+
 }

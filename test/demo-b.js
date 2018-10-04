@@ -12,7 +12,7 @@ const otherDanmakuPlayer = new DanmakuPlayer({
   trackHeight: 70,
   on: {
     play () {
-      console.log('Demo-b Start playing ！！')
+      console.warn('Demo-b Start playing ！！')
     }
   }
 })
