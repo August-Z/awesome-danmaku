@@ -122,36 +122,29 @@ export class Dnode {
     return this
   }
 
-  run (): Promise<Dnode> {
-    const self = this
-    return new Promise((resolve, reject) => {
-      // 重绘节点，此处 Status => Ready
-      self._draw()
-      self.runStatus = DnodeRunStatus.READY
-      try {
-        self.track.rolling((t) => {
-          // 发射弹幕，此处 Status => Running
-          self.launch()
-          self.runStatus = DnodeRunStatus.RUNNING
+  run (cb?: Function): void {
+    this._draw()
 
-          // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched
-          setTimeout(() => {
-            t.stopRolling()
-            self.runStatus = DnodeRunStatus.LAUNCHED
-          }, self.launchTime)
+    this.runStatus = DnodeRunStatus.READY
+    this.track.rolling((t) => {
+      // 发射弹幕，此处 Status => Running
+      this.launch()
+      this.runStatus = DnodeRunStatus.RUNNING
 
-          // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
-          setTimeout(() => {
-            self.flyBack()
-            self.runStatus = DnodeRunStatus.RUN_END
-            resolve(self)
-          }, self.totalTime)
-        })
-      } catch (e) {
-        reject(e)
-      } finally {
-        // todo some hook?
-      }
+      // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched
+      setTimeout(() => {
+        t.stopRolling()
+        this.runStatus = DnodeRunStatus.LAUNCHED
+      }, this.launchTime)
+
+      // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
+      setTimeout(() => {
+        this.flyBack()
+        this.runStatus = DnodeRunStatus.RUN_END
+
+        // callback
+        typeof cb === 'function' && cb(this)
+      }, this.totalTime)
     })
   }
 

@@ -110,7 +110,7 @@ export class DanmakuPlayer {
       const nodeOps: DnodeOptions = this.list.shift()
       const node: Dnode = this.getUnObstructedNode()
 
-      node.patch(nodeOps).run().then((n: Dnode) => {
+      node.patch(nodeOps).run((n: Dnode) => {
         // todo run end hook
       })
     }
