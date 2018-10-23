@@ -5,8 +5,16 @@ const baseWebpackConfig = require('./webpack.base.conf')
 
 const prodWebpackConfig = merge(baseWebpackConfig, {
   entry: {
-    main: utils.resolve('src')
-  }
+    common: utils.resolve('src/runtime/common.js'),
+    esm: utils.resolve('src/runtime/esm.js'),
+    browser: utils.resolve('src/runtime/browser.js')
+  },
+  output: {
+    path: utils.resolve('dist'),
+    filename: 'danmaku.[name].js',
+    libraryTarget: 'umd',
+    publicPath: '/'
+  },
 })
 
 module.exports = prodWebpackConfig

@@ -1,11 +1,9 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Danmaku components for HTML5",
-  "main": "dist/index.min.js",
-  "module": "dist/index.min.js",
-  "unpkg": "dist/index.min.js",
-  "typings": "dist/index.min.js",
+  "main": "dist/danmaku.common.js",
+  "module": "dist/danmaku.esm.js",
   "scripts": {
     "dev": "webpack-dev-server --inline --colors --progress --profile --config scripts/webpack.dev.conf.js",
     "build": "yarn run flow && yarn run build-sourc",

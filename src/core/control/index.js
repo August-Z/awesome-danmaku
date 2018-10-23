@@ -84,7 +84,8 @@ export class DanmakuPlayer {
 
     if (!Array.isArray(this.list)) {
       throw new TypeError('list must instanceof Array')
-    } else if (['static', 'static !important', ''].includes(getComputedStyle(this.el).position)) {
+    }
+    else if (['static', 'static !important', ''].includes(getComputedStyle(this.el).position)) {
       throw new Error(
         'Play error! el (wrap dom) position can\'t is static or empty, \n' +
         'Please set \"relative\"、\"absolute\" or \"fixed\".'
@@ -92,9 +93,11 @@ export class DanmakuPlayer {
     }
 
     // eval
+    clearInterval(this.playTimer)
     this.playTimer = setInterval(() => {
       this.playTick()
     }, this._loopTime)
+
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
 
@@ -102,9 +105,11 @@ export class DanmakuPlayer {
   }
 
   playTick (): void {
-    if (this.hasTasks) {
+    if (this.hasTasks && this.playStatus === DanmakuControlPlayStatus.PLAY) {
+
       const nodeOps: DnodeOptions = this.list.shift()
       const node: Dnode = this.getUnObstructedNode()
+
       node.patch(nodeOps).run().then((n: Dnode) => {
         // todo run end hook
       })
@@ -112,17 +117,25 @@ export class DanmakuPlayer {
   }
 
   pause (): DanmakuPlayer {
-    clearInterval(this.playTimer)
-    this.playStatus = DanmakuControlPlayStatus.PAUSED
-    this._controlHook(DanmakuControlEventName.PAUSE)
+    setTimeout(() => {
+      this.playStatus = DanmakuControlPlayStatus.PAUSED
+      this._controlHook(DanmakuControlEventName.PAUSE)
+    }, this._loopTime)
+
     return this
   }
 
   stop (): DanmakuPlayer {
-    clearInterval(this.playTimer)
-    this.clearList()
-    this.playStatus = DanmakuControlPlayStatus.STOP
-    this._controlHook(DanmakuControlEventName.STOP)
+    setTimeout(() => {
+
+      clearInterval(this.playTimer)
+      this.clearList()
+
+      this.playStatus = DanmakuControlPlayStatus.STOP
+      this._controlHook(DanmakuControlEventName.STOP)
+
+    }, this._loopTime)
+
     return this
   }
 

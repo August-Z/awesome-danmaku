@@ -10,10 +10,10 @@ const banner = [
 ].join('\n')
 
 const config = {
-  entry: utils.resolve('src'),
+  entry: utils.resolve('src/index.js'),
   output: {
     path: utils.resolve('dist'),
-    filename: 'index.min.js',
+    filename: '[name].js',
     libraryTarget: 'umd',
     publicPath: '/'
   },

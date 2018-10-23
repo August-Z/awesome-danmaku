@@ -122,29 +122,30 @@ export class Dnode {
     return this
   }
 
-  run (): any {
+  run (): Promise<Dnode> {
+    const self = this
     return new Promise((resolve, reject) => {
       // 重绘节点，此处 Status => Ready
-      this._draw()
-      this.runStatus = DnodeRunStatus.READY
+      self._draw()
+      self.runStatus = DnodeRunStatus.READY
       try {
-        this.track.rolling((t) => {
+        self.track.rolling((t) => {
           // 发射弹幕，此处 Status => Running
-          this.launch()
-          this.runStatus = DnodeRunStatus.RUNNING
+          self.launch()
+          self.runStatus = DnodeRunStatus.RUNNING
 
           // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched
           setTimeout(() => {
             t.stopRolling()
-            this.runStatus = DnodeRunStatus.LAUNCHED
-          }, this.launchTime)
+            self.runStatus = DnodeRunStatus.LAUNCHED
+          }, self.launchTime)
 
           // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
           setTimeout(() => {
-            this.flyBack()
-            this.runStatus = DnodeRunStatus.RUN_END
-            resolve(this)
-          }, this.totalTime)
+            self.flyBack()
+            self.runStatus = DnodeRunStatus.RUN_END
+            resolve(self)
+          }, self.totalTime)
         })
       } catch (e) {
         reject(e)

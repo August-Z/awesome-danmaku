@@ -3,16 +3,14 @@ const utils = require('./utils')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const baseWebpackConfig = require('./webpack.base.conf')
-const autoprefixer = require('autoprefixer')
 
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
   entry: [
-    utils.resolve('src'),
+    utils.resolve('src/esm.js'),
     utils.resolve('test')
   ],
   module: {
