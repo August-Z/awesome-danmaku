@@ -5,7 +5,7 @@
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",
   "scripts": {
-    "dev": "webpack-dev-server --inline --colors --progress --profile --config scripts/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --inline --colors --progress --config scripts/webpack.dev.conf.js",
     "build": "yarn run flow && yarn run build-sourc",
     "build-sourc": "node scripts/build.js",
     "flow": "flow"

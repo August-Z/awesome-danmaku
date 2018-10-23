@@ -7,7 +7,7 @@ const DanmakuPlayA = Danmaku.control.getPlayer({
 
 DanmakuPlayA.play()
 
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 100; i++) {
   DanmakuPlayA.insert({
     // value: `这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！这是第${i + 1}弹幕！！`,
     value: `这是第${i + 1}弹幕！！`,
@@ -15,15 +15,4 @@ for (let i = 0; i < 50; i++) {
   })
 }
 
-setTimeout(() => {
-  DanmakuPlayA.pause()
-
-  setTimeout(() => {
-    DanmakuPlayA.play()
-  }, 3000)
-
-}, 3000)
-
-
 console.log(DanmakuPlayA)
-

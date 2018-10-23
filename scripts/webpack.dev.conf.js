@@ -10,7 +10,7 @@ const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
   entry: [
-    utils.resolve('src/esm.js'),
+    utils.resolve('src/runtime/esm.js'),
     utils.resolve('test')
   ],
   module: {
