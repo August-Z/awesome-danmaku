@@ -1,0 +1,71 @@
+*
+  margin 0
+  padding 0
+
+.slider-box
+  border-radius 7px
+  opacity 0.95
+  padding 10px 20px
+  background-color white
+  .slider-item
+    height 30px
+    margin-bottom 10px
+    display flex
+    flex-flow row nowrap
+    justify-content center
+    align-items center
+    &:last-child
+      margin-bottom 0
+    .slider-label
+      width 50px
+      font-size 12px
+      font-weight normal
+      letter-spacing 0.25px
+      user-select none
+      pointer-events none
+    .slider-content
+      position relative
+      z-index 10px
+      margin 0 50px
+      width 100px
+      height 4px
+      border-radius 2px
+      background-color #ddd
+      .slider-left-text, .slider-right-text
+        position absolute
+        z-index 5
+        pointer-events none
+        cursor none
+        user-select none
+        width 40px
+        height 20px
+        font-size 13px
+        font-weight 450
+        color #333
+        top 50%
+        vertical-align middle
+        text-align center
+        white-space normal
+        overflow hidden
+        text-overflow ellipsis
+      .slider-left-text
+        left -10px
+        transform translate3d(-100%, -50%, 0)
+      .slider-right-text
+        right -10px
+        transform translate3d(100%, -50%, 0)
+      .slider-button
+        position absolute
+        z-index 20px
+        top 50%
+        width 20px
+        height 20px
+        box-sizing border-box
+        border 2px solid hotpink
+        background-color white
+        border-radius 50%
+        transition transform 200ms
+        transform translate3d(-50%, -50%, 0)
+        cursor grab
+        &:hover
+          transform translate3d(-50%, -50%, 0) scale(1.2)
