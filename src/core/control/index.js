@@ -166,6 +166,18 @@ export class DanmakuPlayer {
     }
   }
 
+  changeTrack (key: string, val: any) {
+    switch (key) {
+      case 'overlap':
+        this._changeTrackOverlap(Number(val))
+        break
+      default:
+        console.warn(
+          `[Change WARN]: The track not has \'${key}\' param! Or this property is readonly.\n`
+        )
+    }
+  }
+
   getUnObstructedTrack (trackIndex?: number): Dtrack {
     const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed)
     const index: number = typeof trackIndex === 'number'
@@ -249,7 +261,8 @@ export class DanmakuPlayer {
       this.trackList.push(new Dtrack({
         index: i,
         width: this.playerWidth,
-        height: this.trackHeight
+        height: this.trackHeight,
+        overlap: 0
       }))
     }
     return this
@@ -311,7 +324,7 @@ export class DanmakuPlayer {
   }
 
   _changeDensity (): void {
-
+    // todo
   }
 
   _changeSpeed (val: number): void {
@@ -359,6 +372,12 @@ export class DanmakuPlayer {
     // 改变队列中的配置
     this.list.forEach((nodeOps: DnodeOptions) => {
       nodeOps.opacity = val
+    })
+  }
+
+  _changeTrackOverlap (val: number): void {
+    this.trackList.forEach((t: Dtrack) => {
+      t.setOverlap(val)
     })
   }
 

@@ -5,6 +5,7 @@ export class Dtrack {
   index: number
   height: number
   offsetTop: number
+  overlap: number
   static ROLLING: number = 1
   static UN_ROLLING: number = 0
 
@@ -13,6 +14,13 @@ export class Dtrack {
     this.index = ops.index
     this.height = ops.height
     this.offsetTop = ops.height * ops.index
+    this.setOverlap(ops.overlap)
+  }
+
+  setOverlap (val: number) {
+    this.overlap = 1 - val / 2 > 0.5
+      ? 1 - val / 2
+      : 0.5
   }
 
   rolling (cb: Function, delay: number = 20): void {
