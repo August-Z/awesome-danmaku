@@ -262,7 +262,7 @@ export class DanmakuPlayer {
         index: i,
         width: this.playerWidth,
         height: this.trackHeight,
-        overlap: 0
+        overlap: 1
       }))
     }
     return this

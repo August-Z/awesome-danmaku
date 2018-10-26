@@ -5,7 +5,7 @@ const DanmakuPlayA = Danmaku.control.getPlayer({
   el: '#demo-a',
   nodeClass: 'item',
   rollingTime: 6000,
-  nodeMaxCount: 30,
+  nodeMaxCount: 25,
   trackCount: 7
 })
 

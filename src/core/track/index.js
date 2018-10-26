@@ -17,10 +17,18 @@ export class Dtrack {
     this.setOverlap(ops.overlap)
   }
 
+  /**
+   * @author August-Z
+   * @remark 设置轨道的重叠程度，值越高代表了重叠程度越小，反之亦然
+   * The area must between 0 ~ 2.
+   * normal value is 1 ,can use float.
+   * @param val
+   */
   setOverlap (val: number) {
-    this.overlap = 1 - val / 2 > 0.5
-      ? 1 - val / 2
-      : 0.5
+    if (val < 0 || val > 2) {
+      throw new RangeError('Param => overlap must be between 0 and 2 of int or float.')
+    }
+    this.overlap = val === 1 ? 1 : 2.0 - val
   }
 
   rolling (cb: Function, delay: number = 20): void {
