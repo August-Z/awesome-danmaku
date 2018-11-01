@@ -131,11 +131,11 @@ export class Dnode {
       this.launch()
       this.runStatus = DnodeRunStatus.RUNNING
 
-      // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched
+      // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched，该时间受轨道的允许覆盖率(0%-100%)影响
       setTimeout(() => {
         t.stopRolling()
         this.runStatus = DnodeRunStatus.LAUNCHED
-      }, this.launchTime)
+      }, this.launchTime * this.track.overlap)
 
       // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
       setTimeout(() => {

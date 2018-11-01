@@ -6,8 +6,8 @@ import { Dnode } from "../node";
 import { DanmakuControlPlayStatus } from "../config";
 import { DanmakuControlEventName } from "../config";
 import { initMergeDefaultParams } from "../util/init-options";
-import { DnodeRunStatus } from "../config/node";
 import { DanmakuControlEvent } from "../event";
+
 
 /**
  * @author August-Z
@@ -146,6 +146,38 @@ export class DanmakuPlayer {
     return this
   }
 
+  /**
+   * 修改控制器的参数，这可以是动态的修改，并会有相应的函数作出反应（如果该 key 是存在且可以被更改的）
+   * @param key 对应键
+   * @param val 修改值
+   */
+  change (key: string, val: any) {
+    switch (key) {
+      case 'opacity':
+        this._changeOpacity(Number(val))
+        break
+      case 'speed' :
+        this._changeSpeed(Number(val))
+        break
+      default:
+        console.warn(
+          `[Change WARN]: The player not has \'${key}\' param! Or this property is readonly.\n`
+        )
+    }
+  }
+
+  changeTrack (key: string, val: any) {
+    switch (key) {
+      case 'overlap':
+        this._changeTrackOverlap(Number(val))
+        break
+      default:
+        console.warn(
+          `[Change WARN]: The track not has \'${key}\' param! Or this property is readonly.\n`
+        )
+    }
+  }
+
   getUnObstructedTrack (trackIndex?: number): Dtrack {
     const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed)
     const index: number = typeof trackIndex === 'number'
@@ -229,7 +261,8 @@ export class DanmakuPlayer {
       this.trackList.push(new Dtrack({
         index: i,
         width: this.playerWidth,
-        height: this.trackHeight
+        height: this.trackHeight,
+        overlap: 1
       }))
     }
     return this
@@ -288,6 +321,64 @@ export class DanmakuPlayer {
     } else {
       throw new TypeError('TransformDnodeOps error, Bad param!')
     }
+  }
+
+  _changeDensity (): void {
+    // todo
+  }
+
+  _changeSpeed (val: number): void {
+    if (Number.isNaN(val)) {
+      throw new Error(
+        'Change Error, speed type must be number, not NaN !\n' +
+        'Please check speed param !'
+      )
+    } else if (val < 0) {
+      throw new Error(
+        'Change Error, opacity value must be greater than 0.\n'
+      )
+    }
+
+    // 改变所有节点
+    this.nodeList.forEach((n: Dnode) => {
+      n.speed = val
+    })
+
+    // 改变队列中的配置
+    this.list.forEach((nodeOps: DnodeOptions) => {
+      nodeOps.speed = val
+    })
+  }
+
+  _changeOpacity (val: number): void {
+    if (Number.isNaN(val)) {
+      throw new Error(
+        'Change Error, opacity type must be number, not NaN !\n' +
+        'Please check opacity param !'
+      )
+    } else if (val < 0 || val > 1) {
+      throw new Error(
+        'Change Error, opacity value must between 0 and 1.\n'
+      )
+    }
+
+    // 改变所有节点
+    this.nodeList
+      .map((n: Dnode) => n.dom)
+      .forEach((dom: HTMLElement) => {
+        dom.style.opacity = val + ''
+      })
+
+    // 改变队列中的配置
+    this.list.forEach((nodeOps: DnodeOptions) => {
+      nodeOps.opacity = val
+    })
+  }
+
+  _changeTrackOverlap (val: number): void {
+    this.trackList.forEach((t: Dtrack) => {
+      t.setOverlap(val)
+    })
   }
 
   _controlHook (hookName: string): void {
