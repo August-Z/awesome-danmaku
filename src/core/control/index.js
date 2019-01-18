@@ -31,7 +31,6 @@ export class DanmakuPlayer {
   nodeList: Array<Dnode> = []
   list: Array<DnodeOptions> = []
   playTimer: any
-  cleanTimer:
   playStatus: number | string
   on: { [key: any]: Function }
 
