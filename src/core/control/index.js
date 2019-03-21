@@ -18,6 +18,7 @@ import { DanmakuControlEvent } from "../event";
 export class DanmakuPlayer {
 
   _loopTime: number
+  _overlap: number
 
   el: HTMLElement
   rollingTime: number
@@ -83,23 +84,28 @@ export class DanmakuPlayer {
 
     if (!Array.isArray(this.list)) {
       throw new TypeError('list must instanceof Array')
-    }
-    else if (['static', 'static !important', ''].includes(getComputedStyle(this.el).position)) {
+    } else if (['static', 'static !important', ''].includes(getComputedStyle(this.el).position)) {
       throw new Error(
         'Play error! el (wrap dom) position can\'t is static or empty, \n' +
         'Please set \"relative\"、\"absolute\" or \"fixed\".'
       )
     }
 
-    // eval
-    clearInterval(this.playTimer)
-    this.playTimer = setInterval(() => {
-      this.playTick()
-    }, this._loopTime)
+    let self = this
+    let counter = 0
+
+    function tickTask () {
+      requestAnimationFrame(tickTask)
+      if (++counter % self._overlap === 0) {
+        counter = 0
+        self.playTick()
+      }
+    }
+
+    requestAnimationFrame(tickTask)
 
     this.playStatus = DanmakuControlPlayStatus.PLAY
     this._controlHook(DanmakuControlEventName.PLAY)
-
     return this
   }
 
@@ -158,21 +164,11 @@ export class DanmakuPlayer {
       case 'speed' :
         this._changeSpeed(Number(val))
         break
-      default:
-        console.warn(
-          `[Change WARN]: The player not has \'${key}\' param! Or this property is readonly.\n`
-        )
-    }
-  }
-
-  changeTrack (key: string, val: any) {
-    switch (key) {
       case 'overlap':
-        this._changeTrackOverlap(Number(val))
-        break
+        this._changeOverlap(Number(val))
       default:
         console.warn(
-          `[Change WARN]: The track not has \'${key}\' param! Or this property is readonly.\n`
+          `[Change WARN]: The player not has \'${ key }\' param! Or this property is readonly.\n`
         )
     }
   }
@@ -227,6 +223,7 @@ export class DanmakuPlayer {
 
   _initSelfConfig (): DanmakuPlayer {
     this._loopTime = Number(Math.round(this.rollingTime / this.nodeMaxCount) + __CONFIG__.TICK_TIME)
+    this._overlap = 15
     return this
   }
 
@@ -260,8 +257,7 @@ export class DanmakuPlayer {
       this.trackList.push(new Dtrack({
         index: i,
         width: this.playerWidth,
-        height: this.trackHeight,
-        overlap: 1
+        height: this.trackHeight
       }))
     }
     return this
@@ -272,7 +268,7 @@ export class DanmakuPlayer {
     const nodeTag: string = this.nodeTag.toLowerCase()
     for (let i = 0; i < this.nodeMaxCount; i++) {
       // language=HTML
-      nodeListHTML += `<${nodeTag} class="${this.nodeClass}"></${nodeTag}>`
+      nodeListHTML += `<${ nodeTag } class="${ this.nodeClass }"></${ nodeTag }>`
     }
     this.el.innerHTML = nodeListHTML
     setTimeout(() => {
@@ -374,10 +370,14 @@ export class DanmakuPlayer {
     })
   }
 
-  _changeTrackOverlap (val: number): void {
-    this.trackList.forEach((t: Dtrack) => {
-      t.setOverlap(val)
-    })
+  /**
+   * 映射到 overlap 值 (1～20)
+   * @param val 0.00 - 1.00
+   * @private
+   */
+  _changeOverlap (val: number): void {
+    let v = Math.round((1 - val) * 20) + 5
+    this._overlap = Math.min(25, Math.max(5, v))
   }
 
   _controlHook (hookName: string): void {

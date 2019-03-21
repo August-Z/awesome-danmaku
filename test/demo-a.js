@@ -5,14 +5,14 @@ const DanmakuPlayA = Danmaku.control.getPlayer({
   el: '#demo-a',
   nodeClass: 'item',
   rollingTime: 6000,
-  nodeMaxCount: 25,
+  nodeMaxCount: 50,
   trackCount: 7
 })
 
 DanmakuPlayA.play()
 
 const options = {
-  density: 0,
+  density: 0.5,
   speed: 1,
   opacity: 1,
 }
@@ -51,7 +51,8 @@ densityBtn.style.left = `${options.density * 100}px`
 handleDrag('.slider-box', '.density .slider-button', {
   up: (val) => {
     const pro = Number((val / 100).toFixed(2))
-    DanmakuPlayA.changeTrack('overlap', pro)
+    console.log(pro)
+    DanmakuPlayA.change('overlap', pro)
   }
 })
 
