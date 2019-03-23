@@ -135,7 +135,7 @@ export class Dnode {
       setTimeout(() => {
         t.stopRolling()
         this.runStatus = DnodeRunStatus.LAUNCHED
-      }, this.launchTime * this.track.overlap)
+      }, this.launchTime)
 
       // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
       setTimeout(() => {
