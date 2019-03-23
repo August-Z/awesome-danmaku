@@ -1,7 +1,7 @@
 import Danmaku from '../src'
 import { handleDrag } from "./slider/slider";
 
-const DanmakuPlayA = Danmaku.control.getPlayer({
+window.DanmakuPlayA = Danmaku.control.getPlayer({
   el: '#demo-a',
   nodeClass: 'item',
   rollingTime: 6000,

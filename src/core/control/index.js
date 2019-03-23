@@ -71,14 +71,34 @@ export class DanmakuPlayer {
 
   /**
    * 向弹幕播放器中添加弹幕
-   * @param danmaku<Array<DnodeOptions> | DnodeOptions | string>
+   * @param danmakuOps
+   * @param sync
    */
-  insert (danmaku: any): Array<DnodeOptions> {
-    this.list.push(
-      ...this._handleDanmakuOps(danmaku)
-    )
+  insert (danmakuOps: any, sync?: boolean = false): Array<DnodeOptions> {
+    if (sync) {
+      // 同步模式，发送的文本会实时显示 (这里不经过发送队列，直接创建一个临时的 Dnode)
+      const nodeTag: string = this.nodeTag.toLowerCase()
+      const nodeDom: HTMLElement = document.createElement(nodeTag)
+      const nodeOps: DnodeOptions = this._handleDanmakuOps(danmakuOps).shift()
+      const node: Dnode = new Dnode({
+        control: self,
+        ...__CONFIG__.DnodeDefaultConfig.getDefault,
+        ...nodeOps
+      }).init(nodeDom)
+      nodeDom.setAttribute('class', this.nodeClass)
+      this.el.appendChild(nodeDom)
+      node.patch(nodeOps).run((n: Dnode) => {
+        this.el.removeChild(nodeDom)
+      })
+    } else {
+      // 常规的异步模式，弹幕的发送会经过发送队列
+      this.list.push(
+        ...this._handleDanmakuOps(danmakuOps)
+      )
+    }
     return this.list
   }
+
 
   play (): DanmakuPlayer {
 
@@ -166,6 +186,7 @@ export class DanmakuPlayer {
         break
       case 'overlap':
         this._changeOverlap(Number(val))
+        break
       default:
         console.warn(
           `[Change WARN]: The player not has \'${ key }\' param! Or this property is readonly.\n`
