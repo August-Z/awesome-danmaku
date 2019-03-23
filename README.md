@@ -34,7 +34,8 @@ danmakuPlayer.insert([
 
 ## API 
 
-### Control(selectors | HTMLElement | config): Player
+### Control
+##### getPlayer(selectors | HTMLElement | config): Player
 ```js
 // 获取弹幕机 Player
 Control.getPlayer('#app')
