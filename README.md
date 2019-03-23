@@ -78,7 +78,7 @@ Player.insert({
   value: 'Hello Awesome-Danmaku!',
   opacity: 0.8,
   color: '#ff0000',
-})
+}, true)
 
 // 参数可以以数组方式传递
 Player.insert([
