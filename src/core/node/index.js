@@ -42,7 +42,7 @@ export class Dnode {
       display: 'inline-block',
       width: `${this.width}px`,
       height: `${this.height}px`,
-      lineHeight: '1.125',
+      lineHeight: `${this.height}px`,
       fontSize: `${this.fontSize}px`,
       fontFamily: this.fontFamily,
       fontWeight: this.fontWeight,

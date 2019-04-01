@@ -25,3 +25,11 @@ body {
   height: 44vh;
   background-color: #333;
 }
+
+.item {
+  padding: 0 1rem;
+}
+
+.send{
+  border: 1px solid #78CAFA;
+}

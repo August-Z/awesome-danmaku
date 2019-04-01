@@ -85,7 +85,18 @@ export class DanmakuPlayer {
         ...__CONFIG__.DnodeDefaultConfig.getDefault,
         ...nodeOps
       }).init(nodeDom)
-      nodeDom.setAttribute('class', this.nodeClass)
+
+      console.log(nodeOps)
+      let optionClass: string = ''
+      if ('nodeClass' in nodeOps && nodeOps.nodeClass) {
+        if (Array.isArray(nodeOps.nodeClass) && nodeOps.nodeClass.every((v) => typeof v === 'string')) {
+          optionClass = nodeOps.nodeClass.join(' ')
+        } else if (typeof nodeOps.nodeClass === 'string') {
+          optionClass = nodeOps.nodeClass
+        }
+      }
+
+      nodeDom.setAttribute('class', `${ this.nodeClass } ${ optionClass }`)
       this.el.appendChild(nodeDom)
       node.patch(nodeOps).run((n: Dnode) => {
         this.el.removeChild(nodeDom)

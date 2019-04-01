@@ -13,7 +13,8 @@ export class DnodeDefaultConfig {
       color: DnodeDefaultConfig.COLOR,
       speed: DnodeDefaultConfig.SPEED,
       fontWeight: DnodeDefaultConfig.FONT_WEIGHT,
-      opacity: DnodeDefaultConfig.OPACITY
+      opacity: DnodeDefaultConfig.OPACITY,
+      nodeClass: ''
     }
   }
 }

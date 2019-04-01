@@ -1,7 +1,8 @@
 # awesome-danmaku
 [![npm version](https://img.shields.io/npm/v/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.org/package/awesome-danmaku)
 [![npm downloads](https://img.shields.io/npm/dm/awesome-danmaku.svg?style=flat-square)](https://www.npmjs.com/package/awesome-danmaku)
-
+[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
+[![LICENSE](https://img.shields.io/badge/license-NPL%20(The%20996%20Prohibited%20License)-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 
 ## awesome-danmaku 是什么
 awesome-danmaku 是一款解决前端弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
@@ -149,7 +150,10 @@ const nodeConfig = {
   color: '#FFFFFF',
   
   // 弹幕速度系数，取值范围(>0)，标准为1
-  speed: 1
+  speed: 1,
+  
+  // 弹幕节点的 DOM 类名，可以是数组形式
+  nodeClass: ''
 }
 ```
 

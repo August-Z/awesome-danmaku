@@ -7,6 +7,7 @@ declare type DnodeOptions = {
   opacity: number | string;
   color: string;
   speed: number;
+  nodeClass?: string | string[];
 }
 
 declare type DnodeSize = {

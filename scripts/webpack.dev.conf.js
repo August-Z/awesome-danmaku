@@ -27,7 +27,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     hot: false,
     compress: true,
     contentBase: false,
-    host: HOST || 'localhost',
+    host: HOST || '0.0.0.0',
     port: PORT || 9090,
     open: false,
     index: 'index.html',
