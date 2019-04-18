@@ -1,7 +1,7 @@
 import Danmaku from '../src'
 import { handleDrag } from "./slider/slider";
 
-window.DanmakuPlayA = Danmaku.control.getPlayer({
+window.DanmakuPlayA = Danmaku.getPlayer({
   el: '#demo-a',
   nodeClass: 'item',
   rollingTime: 6000,
@@ -17,7 +17,6 @@ const options = {
   opacity: 1,
 }
 
-let i = 0
 const danmakuList = [
   '第一',
   '我才是第一！',

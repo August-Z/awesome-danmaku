@@ -1,6 +1,6 @@
 import Danmaku from '../src'
 
-const otherDanmakuPlayer = new Danmaku.control({
+const otherDanmakuPlayer = new Danmaku({
   el: '#demo-b',
   rollingTime: 2000,
   nodeTag: 'div',
