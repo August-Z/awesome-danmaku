@@ -1,7 +1,8 @@
 'use strict'
-const utils = require('./utils')
+const path = require('path')
 const npmCfg = require('../package.json')
 const webpack = require('webpack')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const banner = [
   npmCfg.name + ' v' + npmCfg.version,
@@ -10,23 +11,62 @@ const banner = [
 ].join('\n')
 
 const config = {
-  entry: utils.resolve('src/index.js'),
-  output: {
-    path: utils.resolve('dist'),
-    filename: '[name].js',
-    libraryTarget: 'umd',
-    publicPath: '/'
-  },
+  context: path.resolve(__dirname, '../'),
+  entry: './src/index.js',
   module: {
     rules: [
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        include: [utils.resolve('src')],
+        use: 'babel-loader',
         exclude: /node_modules/
-      }
+      },
+      {
+        test: /\.styl$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          'stylus-loader'
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: 'img/[name].[hash:7].[ext]'
+        }
+      },
+      {
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: 'fonts/[name].[hash:7].[ext]'
+        }
+      },
     ]
   },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          compress: false,
+          warnings: false,
+          ie8: false,
+        }
+      })
+    ]
+  },
+  plugins: [
+    new webpack.BannerPlugin(banner)
+  ],
   node: {
     setImmediate: false,
     dgram: 'empty',
@@ -35,14 +75,6 @@ const config = {
     tls: 'empty',
     child_process: 'empty'
   },
-  plugins: [
-    new webpack.BannerPlugin(banner),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
-  ]
 }
 
 module.exports = config

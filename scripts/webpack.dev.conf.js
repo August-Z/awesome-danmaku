@@ -1,5 +1,4 @@
 'use strict'
-const utils = require('./utils')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -9,18 +8,11 @@ const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
+  mode: 'development',
   entry: [
-    utils.resolve('src/runtime/esm.js'),
-    utils.resolve('test')
+    './src/runtime/esm.js',
+    './test/index.js'
   ],
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        loader: 'style-loader!css-loader'
-      }
-    ]
-  },
   devtool: 'cheap-module-eval-source-map',
   devServer: {
     clientLogLevel: 'warning',
@@ -30,7 +22,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     host: HOST || '0.0.0.0',
     port: PORT || 9090,
     open: false,
-    index: 'index.html',
+    index: 'dev.html',
     inline: true,
     overlay: {
       warnings: false,
@@ -49,8 +41,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new webpack.NoEmitOnErrorsPlugin(),
     new HtmlWebpackPlugin({
       title: 'Awesome Danmaku Dev Runtime',
-      filename: 'index.html',
-      template: 'index.html',
+      filename: 'dev.html',
+      template: 'dev.html',
       inject: true
     })
   ]

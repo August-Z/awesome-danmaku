@@ -1,4 +1,5 @@
 node_modules
+test
 build
 npm-debug.log*
 .DS_Store
@@ -6,3 +7,4 @@ npm-debug.log*
 .vscode
 yarn.lock
 package-lock.json
+
