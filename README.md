@@ -20,12 +20,12 @@ $ npm install awesome-danmaku
 <div id="app"></div>
 ```
 ```js
-import Danmaku from 'awesome-danmaku'
-const player = Danmaku.control.getPlayer('#app')
+import AwesomeDanmaku from 'awesome-danmaku'
+const player = AwesomeDanmaku.getPlayer('#app')
 
 // play 和 insert 这两个主要操作没有先后次序的要求，你亦可以先插入后再启动控制器
-danmakuPlayer.play()
-danmakuPlayer.insert([
+player.play()
+player.insert([
   'Hello Awesome Danmaku!',
   '我是第1条弹幕...',
   '我是第2条弹幕...',
@@ -33,16 +33,25 @@ danmakuPlayer.insert([
 ])  
 ```
 
+使用 CommonJs
+```javascript
+const AwesomeDanmaku = require('awesome-danmaku')
+```
+
+使用 **\<script\>** 标签引入
+```html
+<script src="dist/danmaku.browser.js"></script>
+```
+
 ## API 
 
-### Control
 ##### getPlayer(selectors | HTMLElement | config): Player
 ```js
 // 获取弹幕机 Player
-Control.getPlayer('#app')
+AwesomeDanmaku.getPlayer('#app')
 
 // 传入更详细的配置，这里增加了「弹幕最大数」与「弹幕轨道数」的参数
-Control.getPlayer({
+AwesomeDanmaku.getPlayer({
   el: '#app',
   maxCount: 50,
   trackCount: 5
@@ -159,10 +168,14 @@ const nodeConfig = {
 
 ## 版本更新
 
+### v1.3.4 
+- 原有的 control 命名空间下的所有 API 移入 AwesomeDanmaku 下，并移除 control 模块  
+- 更新补充文档
+
 ### v1.3.1
-player#insert(string | config [, sync])  
+- player#insert(string | config [, sync])  
 现在使用 insert() 插入弹幕时，可添加第二个参数，将发送弹幕立即显示
 
 ### v1.3.0
-使用 window.requestAnimationFrame 代替了原有的队列定时器逻辑
+- 使用 window.requestAnimationFrame 代替了原有的队列定时器逻辑
 
