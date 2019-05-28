@@ -205,7 +205,7 @@ export class DanmakuPlayer {
     }
   }
 
-  getUnObstructedTrack (trackIndex?: number): Dtrack {
+   getUnObstructedTrack (trackIndex?: number): Dtrack {
     const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed)
     const index: number = typeof trackIndex === 'number'
       ? trackIndex

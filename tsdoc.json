@@ -1,0 +1,34 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "plugins": [
+    "plugins/markdown",
+    "/home/august/privaryProjects/awesome-danmaku/node_modules/tsdoc/template/plugins/TSDoc.js"
+  ],
+  "opts": {
+    "template": "/home/august/privaryProjects/awesome-danmaku/node_modules/tsdoc/template",
+    "recurse": "true"
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "source": {
+    "includePattern": "(\\.d)?\\.ts$"
+  },
+  "markdown": {
+    "parser": "gfm",
+    "hardwrap": true
+  },
+  "tsdoc": {
+    "source": "/home/august/privaryProjects/awesome-danmaku/src",
+    "destination": "/home/august/privaryProjects/awesome-danmaku/docs",
+    "tutorials": "",
+    "systemName": "awesome-danmaku",
+    "footer": "",
+    "copyright": "awesome-danmaku Copyright © 2019 august.",
+    "outputSourceFiles": false,
+    "commentsOnly": false
+  }
+}

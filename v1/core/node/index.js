@@ -94,7 +94,7 @@ export class Dnode {
       } else if (DanmakuPlayer.getPlayer().el instanceof HTMLElement) {
         DanmakuPlayer.getPlayer().el.appendChild(template)
       } else {
-        throw new Error('Template DOM Error! [document.body] missing or Not control wrap Dom!!')
+        throw new Error('Template DOM Error! [document.body] missing or Not player wrap Dom!!')
       }
       Dnode.instanceTextSizeDom = template
 
