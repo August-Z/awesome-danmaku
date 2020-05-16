@@ -170,6 +170,10 @@ const nodeConfig = {
 
 ## 版本更新
 
+### v1.4.1
+- 提高样式的切换效率
+- 文本由 textContent 实现，原为 innerText
+
 ### v1.3.4 
 - 原有的 control 命名空间下的所有 API 移入 AwesomeDanmaku 下，并移除 control 模块  
 - 更新补充文档
