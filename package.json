@@ -1,6 +1,6 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.3.5",
+  "version": "1.4.0",
   "description": "Danmaku components for HTML5",
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",

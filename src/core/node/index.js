@@ -31,13 +31,10 @@ export class Dnode {
   }
 
   get unObstructed (): boolean {
-    return [
-      DnodeRunStatus.INIT,
-      DnodeRunStatus.RUN_END
-    ].includes(this.runStatus)
+    return DnodeRunStatus.INIT === this.runStatus || DnodeRunStatus.RUN_END === this.runStatus
   }
 
-  get drawStyle (): { [key: string]: string | number } {
+  getDrawStyle (): { [key: string]: string | number } {
     return {
       display: 'inline-block',
       width: `${this.width}px`,
@@ -55,7 +52,6 @@ export class Dnode {
       position: 'absolute',
       userSelect: 'none',
       whiteSpace: 'pre',
-      perspective: '500px',
       cursor: 'none',
       pointerEvents: 'none'
     }
@@ -83,10 +79,12 @@ export class Dnode {
         whiteSpace: 'pre',
         ...ops
       }
+      let templateStyleText: string = ''
+      for (const k in templateStyle) {
+        templateStyleText += `${k}: ${templateStyle[k]};`
+      }
       template.className = 'awesome-danmaku-template'
-      Object.entries(templateStyle).forEach(([k, v]: any): void => {
-        template.style[k] = v
-      })
+      template.style.cssText = templateStyleText
 
       // insert dom to html
       if (document.body) {
@@ -152,6 +150,7 @@ export class Dnode {
    * Dnode 正式开始运动，发射
    */
   launch (): Dnode {
+    this.dom.style.display = 'inline-block'
     this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
     return this
   }
@@ -160,26 +159,21 @@ export class Dnode {
    * Dnode 运动完毕，隐藏并归位
    */
   flyBack (): Dnode {
-    this.dom.innerText = ''   // ?? 是否需要有待测试
-    this.dom.style.display = `none`
-    this.dom.style.transform = `translate3d(0, 0, 0)`
-    this.dom.style.transition = `transform 0ms linear 0s`
+    this.dom.textContent = ''   // ?? 是否需要有待测试
+    this.dom.style.display = 'none'
+    this.dom.style.transform = 'translate3d(0, 0, 0)'
     return this
   }
 
   _init (ops: DnodeOptions): void {
-    if (ops instanceof Object) {
-      this.text = ops.text
-      this.control = ops.control
-      this.fontSize = ops.fontSize
-      this.fontFamily = ops.fontFamily
-      this.fontWeight = ops.fontWeight
-      this.opacity = ops.opacity
-      this.color = ops.color
-      this.speed = ops.speed
-    } else {
-      throw new Error('Init error: Dnode ops bad !')
-    }
+    this.text = ops.text
+    this.control = ops.control
+    this.fontSize = ops.fontSize
+    this.fontFamily = ops.fontFamily
+    this.fontWeight = ops.fontWeight
+    this.opacity = ops.opacity
+    this.color = ops.color
+    this.speed = ops.speed
   }
 
   _computedTextSize (): void {
@@ -210,7 +204,7 @@ export class Dnode {
   }
 
   _editText (): Dnode {
-    this.dom.innerText = this.text
+    this.dom.textContent = this.text
     return this
   }
 
@@ -222,10 +216,12 @@ export class Dnode {
     if (!(this.dom instanceof HTMLElement)) {
       throw new Error('Draw error: dom not instanceof HTMLElement !')
     }
-    const style: CSSStyleDeclaration = this.dom.style
-    Object.entries(this.drawStyle).forEach(([k, v]: any): void => {
-      style[k] = v
-    })
+    const drawStyle = this.getDrawStyle()
+    let drawStyleText: string = ''
+    for (const k in drawStyle) {
+      drawStyleText += `${k}: ${drawStyle[k]};`
+    }
+    this.dom.style.cssText = drawStyleText
     return this
   }
 

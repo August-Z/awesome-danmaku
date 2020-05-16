@@ -1,3 +1,4 @@
+// @flow
 export class DanmakuControlPlayStatus {
   static EMPTY: number = -1
   static INIT: number = 100

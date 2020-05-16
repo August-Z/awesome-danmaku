@@ -72,9 +72,9 @@ export class DanmakuPlayer {
   /**
    * 向弹幕播放器中添加弹幕
    * @param danmakuOps
-   * @param sync
+   * @param sync {boolean} 是否同步
    */
-  insert (danmakuOps: any, sync?: boolean = false): Array<DnodeOptions> {
+  insert (danmakuOps: any, sync: boolean = false): Array<DnodeOptions> {
     if (sync) {
       // 同步模式，发送的文本会实时显示 (这里不经过发送队列，直接创建一个临时的 Dnode)
       const nodeTag: string = this.nodeTag.toLowerCase()
@@ -86,7 +86,6 @@ export class DanmakuPlayer {
         ...nodeOps
       }).init(nodeDom)
 
-      console.log(nodeOps)
       let optionClass: string = ''
       if ('nodeClass' in nodeOps && nodeOps.nodeClass) {
         if (Array.isArray(nodeOps.nodeClass) && nodeOps.nodeClass.every((v) => typeof v === 'string')) {
@@ -274,13 +273,17 @@ export class DanmakuPlayer {
   }
 
   _bindControlStyle (): DanmakuPlayer {
+    const controlStyleList: string[] = [
+      'overflow: hidden;',
+      'cursor: none;',
+      'pointerEvents: none;',
+      'verticalAlign: baseline;',
+      'transform: translateZ(0);'
+    ]
     if (['', 'static'].includes(getComputedStyle(this.el).position)) {
-      this.el.style.position = 'relative'
+      controlStyleList.push('position: relative;')
     }
-    this.el.style.overflow = 'hidden'
-    this.el.style.cursor = 'none'
-    this.el.style.pointerEvents = 'none'
-    this.el.style.verticalAlign = 'baseline'
+    this.el.style.cssText = controlStyleList.join('')
     return this
   }
 
