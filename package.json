@@ -1,6 +1,6 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Danmaku components for HTML5",
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",
@@ -60,6 +60,7 @@
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10",
     "webpack-merge": "^4.1.4",
-    "uglifyjs-webpack-plugin": "^2.1.1"
+    "uglifyjs-webpack-plugin": "^2.1.1",
+    "stats.js": "^0.17.0"
   }
 }

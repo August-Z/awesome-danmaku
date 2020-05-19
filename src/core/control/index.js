@@ -276,8 +276,8 @@ export class DanmakuPlayer {
     const controlStyleList: string[] = [
       'overflow: hidden;',
       'cursor: none;',
-      'pointerEvents: none;',
-      'verticalAlign: baseline;',
+      'pointer-events: none;',
+      'vertical-align: baseline;',
       'transform: translateZ(0);'
     ]
     if (['', 'static'].includes(getComputedStyle(this.el).position)) {
@@ -288,12 +288,13 @@ export class DanmakuPlayer {
   }
 
   _initTrackList (): DanmakuPlayer {
+    const playerWidth: number = this.playerWidth
     for (let i = 0; i < this.trackCount; i++) {
-      this.trackList.push(new Dtrack({
+      this.trackList[i] = new Dtrack({
         index: i,
-        width: this.playerWidth,
+        width: playerWidth,
         height: this.trackHeight
-      }))
+      })
     }
     return this
   }
