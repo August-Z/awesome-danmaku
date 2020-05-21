@@ -5,7 +5,7 @@
 [![LICENSE](https://img.shields.io/badge/license-NPL%20(The%20996%20Prohibited%20License)-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 
 ## awesome-danmaku 是什么
-awesome-danmaku 是一款解决前端弹幕场景需求的插件。它基于原生 JS 实现的，不依赖任何框架。
+awesome-danmaku 是一款解决前端弹幕场景需求的插件，目前由原生 DOM + CSS3 实现，无依赖库。
 
 ## Demos
 - [First Demo](https://august-z.github.io/awesome-danmaku/)

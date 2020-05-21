@@ -1,7 +1,7 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.4.2",
-  "description": "Danmaku components for HTML5",
+  "version": "1.4.3",
+  "description": "Danmaku lib for HTML5",
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",
   "scripts": {
@@ -19,7 +19,12 @@
   ],
   "keywords": [
     "Danmaku",
-    "弹幕"
+    "弹幕",
+    "Barrage",
+    "Bullet",
+    "Bullets",
+    "CSS3",
+    "awesome"
   ],
   "author": "August-Z",
   "email": "402279076@qq.com",
