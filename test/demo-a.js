@@ -23,8 +23,8 @@ import Stats from 'stats.js/build/stats.min';
 window.DanmakuPlayA = Danmaku.getPlayer({
   el: '#demo-a',
   nodeClass: 'item',
-  rollingTime: 10000,
-  nodeMaxCount: 500,
+  rollingTime: 5000,
+  nodeMaxCount: 70,
   trackCount: 30,
   trackHeight: 20
 })
@@ -60,7 +60,7 @@ setInterval(() => {
     fontSize: 10 + Math.floor(Math.random() * 5),
     color: getColor()
   }, options))
-}, 10)
+}, 50)
 
 
 /**

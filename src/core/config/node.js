@@ -1,3 +1,4 @@
+// @flow
 export class DnodeRunStatus {
   static EMPTY = -1
   static INIT = 100

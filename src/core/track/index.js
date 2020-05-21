@@ -1,5 +1,8 @@
 // @flow
 
+/**
+ * 弹幕轨道
+ */
 export class Dtrack {
   status: number
   index: number
@@ -15,11 +18,11 @@ export class Dtrack {
     this.offsetTop = ops.height * ops.index
   }
 
-  rolling (cb: Function, delay: number = 20): void {
-    setTimeout(() => {
+  rolling (cb: Function): void {
+    requestAnimationFrame(() => {
       this.status = Dtrack.ROLLING
       typeof cb === 'function' && cb(this)
-    }, delay)
+    })
   }
 
   stopRolling (): void {

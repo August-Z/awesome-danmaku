@@ -21,6 +21,8 @@ export class Dnode {
   totalTime: number
   dom: HTMLElement
   runStatus: number
+  launchTimer: TimeoutID | null = null
+  runningTimer: TimeoutID | null = null
 
   static instanceTextSizeDom: HTMLElement
   static instanceTextSizeCanvas: HTMLCanvasElement
@@ -94,27 +96,31 @@ export class Dnode {
 
   run (cb?: Function): void {
     this._draw()
-
     this.runStatus = DnodeRunStatus.READY
     this.track.rolling((t) => {
       // 发射弹幕，此处 Status => Running
       this.launch()
-      this.runStatus = DnodeRunStatus.RUNNING
 
       // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched，该时间受轨道的允许覆盖率(0%-100%)影响
-      setTimeout(() => {
+      if (this.launchTimer) {
+        clearTimeout(this.launchTimer)
+        this.launchTimer = null
+      }
+      this.launchTimer = setTimeout(() => {
         t.stopRolling()
         this.runStatus = DnodeRunStatus.LAUNCHED
       }, this.launchTime)
 
       // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
-      setTimeout(() => {
-        this.flyBack()
-        this.runStatus = DnodeRunStatus.RUN_END
-
-        // callback
-        typeof cb === 'function' && cb(this)
-      }, this.totalTime)
+      if (typeof cb === 'function') {
+        if (this.runningTimer) {
+          clearTimeout(this.runningTimer)
+          this.runningTimer = null
+        }
+        this.runningTimer = setTimeout(() => {
+          typeof cb === 'function' && cb(this)
+        }, this.totalTime)
+      }
     })
   }
 
@@ -122,6 +128,7 @@ export class Dnode {
    * Dnode 正式开始运动，发射
    */
   launch (): Dnode {
+    this.runStatus = DnodeRunStatus.RUNNING
     // this.dom.style.display = 'inline-block'
     this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
     return this
@@ -131,6 +138,7 @@ export class Dnode {
    * Dnode 运动完毕，隐藏并归位
    */
   flyBack (): Dnode {
+    this.runStatus = DnodeRunStatus.RUN_END
     // this.dom.textContent = ''   // ?? 是否需要有待测试
     // this.dom.style.display = 'none'
     this.dom.style.transition = 'none'

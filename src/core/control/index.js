@@ -19,6 +19,7 @@ export class DanmakuPlayer {
 
   _loopTime: number
   _overlap: number
+  _elementMap: WeakMap<HTMLElement, Dnode>
 
   el: HTMLElement
   rollingTime: number
@@ -47,6 +48,7 @@ export class DanmakuPlayer {
     this.playStatus = DanmakuControlPlayStatus.EMPTY
     this._handleOptions(ops)
     this._init()
+    this._registerEvent()
   }
 
   get playerWidth (): number {
@@ -81,7 +83,7 @@ export class DanmakuPlayer {
       const nodeDom: HTMLElement = document.createElement(nodeTag)
       const nodeOps: DnodeOptions = this._handleDanmakuOps(danmakuOps).shift()
       const node: Dnode = new Dnode({
-        control: self,
+        control: this,
         ...__CONFIG__.DnodeDefaultConfig.getDefault,
         ...nodeOps
       }).init(nodeDom)
@@ -96,9 +98,10 @@ export class DanmakuPlayer {
       }
 
       nodeDom.setAttribute('class', `${ this.nodeClass } ${ optionClass }`)
-      this.el.appendChild(nodeDom)
+      this.el.appendChild(nodeDom) // echo reflow and replant
       node.patch(nodeOps).run((n: Dnode) => {
         this.el.removeChild(nodeDom)
+        delete node.dom
       })
     } else {
       // 常规的异步模式，弹幕的发送会经过发送队列
@@ -145,9 +148,7 @@ export class DanmakuPlayer {
       const nodeOps: DnodeOptions = this.list.shift()
       const node: Dnode = this.getUnObstructedNode()
 
-      node.patch(nodeOps).run((n: Dnode) => {
-        // todo run end hook
-      })
+      node.patch(nodeOps).run()
     }
   }
 
@@ -252,6 +253,33 @@ export class DanmakuPlayer {
     return this
   }
 
+  _registerEvent (): void {
+    if (!this.el) {
+      return undefined
+    }
+    this.el.addEventListener('transitionend', (e) => {
+      if (e && e.target) {
+        const element: EventTarget = e.target
+        if (!(element instanceof HTMLElement)) {
+          return undefined
+        }
+        let node: Dnode | void
+        if (this._elementMap.has(element)) {
+          node = this._elementMap.get(element)
+        } else {
+          for (let i = 0, len = this.nodeList.length, item; i < len; i++) {
+            item = this.nodeList[i]
+            if (item.dom === element) {
+              node = item
+              break
+            }
+          }
+        }
+        node && node.flyBack()
+      }
+    })
+  }
+
   _initSelfConfig (): DanmakuPlayer {
     this._loopTime = Number(Math.round(this.rollingTime / this.nodeMaxCount) + __CONFIG__.TICK_TIME)
     this._overlap = 15
@@ -304,21 +332,25 @@ export class DanmakuPlayer {
     const nodeTag: string = this.nodeTag.toLowerCase()
     for (let i = 0; i < this.nodeMaxCount; i++) {
       // language=HTML
-      nodeListHTML += `<${ nodeTag } class="${ this.nodeClass }"></${ nodeTag }>`
+      nodeListHTML += `<${ nodeTag } class="${ this.nodeClass }" danmaku></${ nodeTag }>`
     }
     this.el.innerHTML = nodeListHTML
-    setTimeout(() => {
+    this._elementMap = new WeakMap()
+    const that = this
+    requestAnimationFrame(() => {
       const domCollection: HTMLCollection<HTMLElement> = this.el.getElementsByClassName(this.nodeClass)
       this.nodeList = Array.prototype.slice
         .call(domCollection)
         .map((nodeDom: HTMLElement) => {
-          return new Dnode({
+          const node = new Dnode({
             control: this,
             text: '',
             ...__CONFIG__.DnodeDefaultConfig.getDefault
           }).init(nodeDom)
+          that._elementMap.set(nodeDom, node)
+          return node
         })
-    }, __CONFIG__.TICK_TIME)
+    })
     return this
   }
 
