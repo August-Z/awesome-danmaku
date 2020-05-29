@@ -55,7 +55,7 @@ AwesomeDanmaku.getPlayer('#app')
 // 传入更详细的配置，这里增加了「弹幕最大数」与「弹幕轨道数」的参数
 AwesomeDanmaku.getPlayer({
   el: '#app',
-  maxCount: 50,
+  nodeMaxCount: 50,
   trackCount: 5
 })
 ```
