@@ -1,5 +1,5 @@
 /*!
- * awesome-danmaku v1.4.5
+ * awesome-danmaku v1.4.6
  * (c) 2020 August-Z
  * https://github.com/August-Z/awesome-danmaku
  */
