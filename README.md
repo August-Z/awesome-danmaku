@@ -82,10 +82,10 @@ Player.stop()
 ##### insert(string | config [, sync])
 ```js
 // 将弹幕内容置入弹幕机
-// sync 默认为 false，该条弹幕会进入弹幕发送队列
+// sync 默认为 false，该条弹幕会进入弹幕发送队列，加载列表数据时通常建议使用异步模式
 Player.insert('Hello Awesome-Danmaku!')
 
-// sync 为 true 时，该条弹幕将立即显示(插队)
+// sync 为 true 时，该条弹幕将立即显示，适合用于用户发送弹幕(插队)
 Player.insert({
   value: 'Hello Awesome-Danmaku!',
   opacity: 0.8,

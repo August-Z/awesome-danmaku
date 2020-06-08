@@ -1,6 +1,6 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Danmaku lib for HTML5",
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",
