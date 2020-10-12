@@ -22,6 +22,7 @@ export class DanmakuPlayer {
   _elementMap: WeakMap<HTMLElement, Dnode>
 
   el: HTMLElement
+  playerWidth: number
   rollingTime: number
   nodeTag: string
   nodeClass: string
@@ -49,10 +50,6 @@ export class DanmakuPlayer {
     this._handleOptions(ops)
     this._init()
     this._registerEvent()
-  }
-
-  get playerWidth (): number {
-    return this.el.clientWidth || 0
   }
 
   get hasTasks (): boolean {
@@ -144,34 +141,22 @@ export class DanmakuPlayer {
 
   playTick (): void {
     if (this.hasTasks && this.playStatus === DanmakuControlPlayStatus.PLAY) {
-
-      const nodeOps: DnodeOptions = this.list.shift()
-      const node: Dnode = this.getUnObstructedNode()
-
-      node.patch(nodeOps).run()
+      const options = this.list.shift()
+      const node = this.getUnObstructedNode()
+      node && node.patch(options).run()
     }
   }
 
   pause (): DanmakuPlayer {
-    setTimeout(() => {
-      this.playStatus = DanmakuControlPlayStatus.PAUSED
-      this._controlHook(DanmakuControlEventName.PAUSE)
-    }, this._loopTime)
-
+    this.playStatus = DanmakuControlPlayStatus.PAUSED
+    this._controlHook(DanmakuControlEventName.PAUSE)
     return this
   }
 
   stop (): DanmakuPlayer {
-    setTimeout(() => {
-
-      clearInterval(this.playTimer)
-      this.clearList()
-
-      this.playStatus = DanmakuControlPlayStatus.STOP
-      this._controlHook(DanmakuControlEventName.STOP)
-
-    }, this._loopTime)
-
+    this.playStatus = DanmakuControlPlayStatus.STOP
+    this._controlHook(DanmakuControlEventName.STOP)
+    this.clearList()
     return this
   }
 
@@ -205,20 +190,24 @@ export class DanmakuPlayer {
     }
   }
 
-  getUnObstructedTrack (trackIndex?: number): Dtrack {
-    const unObstructedTrackList: Array<Dtrack> = this.trackList.filter((t: Dtrack) => t.unObstructed)
-    const index: number = typeof trackIndex === 'number'
-      ? trackIndex
-      : Math.floor(Math.random() * unObstructedTrackList.length)
-    return unObstructedTrackList[index]
+  getUnObstructedTrack (): Dtrack | null {
+    const trackList = this.trackList
+    for (let i = 0, len = this.trackCount; i < len; i++) {
+      if (trackList[i].unObstructed) {
+        return trackList[i]
+      }
+    }
+    return null
   }
 
-  getUnObstructedNode (nodeIndex?: number): Dnode {
-    const unObstructedNodeList: Array<Dnode> = this.nodeList.filter((n: Dnode) => n.unObstructed)
-    const index: number = typeof nodeIndex === 'number'
-      ? nodeIndex
-      : Math.floor(Math.random() * unObstructedNodeList.length)
-    return unObstructedNodeList[index]
+  getUnObstructedNode (): Dnode | null {
+    const nodeList = this.nodeList
+    for (let i = 0, len = this.nodeMaxCount; i < len; i++) {
+      if (nodeList[i].unObstructed) {
+        return nodeList[i]
+      }
+    }
+    return null
   }
 
   _handleOptions (ops: DanmakuPlayerOptions | HTMLElement | string): DanmakuPlayer {
@@ -257,6 +246,25 @@ export class DanmakuPlayer {
     if (!this.el) {
       return undefined
     }
+    window.addEventListener("orientationchange", (e) => {
+      const value = screen.orientation
+        ? screen.orientation.angle
+        : e.orientation
+      console.log(value)
+      switch (value) {
+        case 0:
+        case 180:
+          this.playerWidth = this.el.clientWidth
+          break
+        case 90:
+        case -90:
+          this.playerWidth = this.el.clientHeight
+          break
+      }
+    }, false)
+    this.el.addEventListener('resize', (e) => {
+      this.playerWidth = this.el.clientWidth
+    })
     this.el.addEventListener('transitionend', (e) => {
       if (e && e.target) {
         const element: EventTarget = e.target
@@ -293,6 +301,7 @@ export class DanmakuPlayer {
         throw new Error('Control dom(el) query for no result')
       } else {
         this.el = _el
+        this.playerWidth = _el.clientWidth
       }
     } else if (!(this.el instanceof HTMLElement)) {
       throw new Error('Control[el] not is HTMLElement, check code !')
@@ -316,12 +325,13 @@ export class DanmakuPlayer {
   }
 
   _initTrackList (): DanmakuPlayer {
-    const playerWidth: number = this.playerWidth
-    for (let i = 0; i < this.trackCount; i++) {
+    const playerWidth = this.playerWidth
+    const trackHeight = this.trackHeight
+    for (let i = 0, len = this.trackCount; i < len; i++) {
       this.trackList[i] = new Dtrack({
         index: i,
         width: playerWidth,
-        height: this.trackHeight
+        height: trackHeight
       })
     }
     return this

@@ -1,6 +1,6 @@
 {
   "name": "awesome-danmaku",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "Danmaku lib for HTML5",
   "main": "dist/danmaku.common.js",
   "module": "dist/danmaku.esm.js",
@@ -34,6 +34,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@tweenjs/tween.js": "^18.5.0",
+    "@types/tween.js": "^18.5.1",
     "autoprefixer": "^9.1.5",
     "babel-core": "^6.25.0",
     "babel-eslint": "^8.0.3",
@@ -56,16 +58,19 @@
     "jquery": "^3.3.1",
     "ora": "^3.0.0",
     "postcss-loader": "^3.0.0",
+    "stats.js": "^0.17.0",
     "style-loader": "^0.23.0",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "ts-loader": "^5.3.0",
+    "uglifyjs-webpack-plugin": "^2.1.1",
     "url-loader": "^1.1.2",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10",
-    "webpack-merge": "^4.1.4",
-    "uglifyjs-webpack-plugin": "^2.1.1",
-    "stats.js": "^0.17.0"
+    "webpack-merge": "^4.1.4"
+  },
+  "dependencies": {
+    "pixi.js": "^5.3.2"
   }
 }

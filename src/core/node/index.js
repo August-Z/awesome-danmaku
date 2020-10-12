@@ -1,5 +1,6 @@
 // @flow
-import { renderTextToSize } from "../util/text-size";
+import { measureTextWidth } from "../util/text-size";
+import { isFunction } from "../util";
 import { Dtrack } from "../track";
 import { DanmakuPlayer } from "../control";
 import { DnodeRunStatus } from "../config/node";
@@ -22,7 +23,8 @@ export class Dnode {
   dom: HTMLElement
   runStatus: number
   launchTimer: TimeoutID | null = null
-  runningTimer: TimeoutID | null = null
+  onStart: Function | void
+  onEnd: Function | void
 
   static instanceTextSizeDom: HTMLElement
   static instanceTextSizeCanvas: HTMLCanvasElement
@@ -37,36 +39,36 @@ export class Dnode {
     return DnodeRunStatus.INIT === this.runStatus || DnodeRunStatus.RUN_END === this.runStatus
   }
 
-  getDrawStyle (): { [key: string]: string | number } {
-    return {
-      'display': 'inline-block',
-      'width': `${this.width}px`,
-      'height': `${this.height}px`,
-      'line-height': `${this.height}px`,
-      'font-size': `${this.fontSize}px`,
-      'font-family': this.fontFamily,
-      'font-weight': this.fontWeight,
-      'color': this.color,
-      'top': `${this.track.getTopByMiddleDnode(this.height)}px`,
-      'left': `${this.control.playerWidth}px`,
-      'opacity': this.opacity + '',
-      'will-change': 'transform',
-      'transform': `translate3d(0, 0, 0)`,
-      'transition': `transform ${this.totalTime}ms linear 0s`,
-      'perspective': '500px',
-      'position': 'absolute',
-      'user-select': 'none',
-      'white-space': 'nowrap',
-      'cursor': 'none',
-      'pointer-events': 'none'
-    }
+  getDrawStyle (): string {
+    return [
+      'display: inline-block',
+      `width: ${this.width}px`,
+      `height: ${this.height}px`,
+      `line-height: ${this.height}px`,
+      `font-size: ${this.fontSize}px`,
+      `font-family: ${this.fontFamily}`,
+      `font-weight: ${this.fontWeight}`,
+      `color: ${this.color}`,
+      `top: ${this.track.getTopByMiddleDnode(this.height)}px`,
+      `left: ${this.control.playerWidth}px`,
+      `opacity: ${this.opacity}`,
+      'transition-property: transform',
+      'transition-timing-function: linear',
+      'transition-delay: 0',
+      // 'perspective: 500px',
+      'position: absolute',
+      'user-select: none',
+      'white-space: nowrap',
+      'cursor: none',
+      'pointer-events: none'
+    ].join('; ')
   }
 
   /**
    * 用于计算弹幕节点尺寸的单例 Canvas 2D 上下文
-   * @returns {HTMLCanvasElement}
+   * @returns {CanvasRenderingContext2D}
    */
-  static getInstanceCanvasRenderingContext2D () {
+  static getInstanceCanvasRenderingContext2D (): CanvasRenderingContext2D {
     if (!this.instanceTextSizeCanvas) {
       const canvas = document.createElement('canvas')
       canvas.id = 'awesome-danmaku__canvas-rendering-2d'
@@ -104,24 +106,15 @@ export class Dnode {
       this.launch()
 
       // 经过了发射区域，弹幕文字已经全部显示于轨道中，此处 Status => Launched，该时间受轨道的允许覆盖率(0%-100%)影响
-      if (this.launchTimer) {
-        clearTimeout(this.launchTimer)
-        this.launchTimer = null
-      }
+      this.launchTimer && clearTimeout(this.launchTimer)
       this.launchTimer = setTimeout(() => {
         t.stopRolling()
         this.runStatus = DnodeRunStatus.LAUNCHED
       }, this.launchTime)
 
       // 弹幕经过了总运动时长，此时已到达轨道终点，此处 Status => RunEnd
-      if (typeof cb === 'function') {
-        if (this.runningTimer) {
-          clearTimeout(this.runningTimer)
-          this.runningTimer = null
-        }
-        this.runningTimer = setTimeout(() => {
-          typeof cb === 'function' && cb(this)
-        }, this.totalTime)
+      if (isFunction(cb)) {
+        this.onEnd = cb
       }
     })
   }
@@ -131,8 +124,11 @@ export class Dnode {
    */
   launch (): Dnode {
     this.runStatus = DnodeRunStatus.RUNNING
-    // this.dom.style.display = 'inline-block'
-    this.dom.style.transform = `translate3d(${this.translateX}px, 0, 0)`
+    this.dom.style.transitionDuration = this.totalTime + 'ms'
+    this.dom.style.display = 'inline-block'
+    requestAnimationFrame(() => {
+      this.dom.style.transform = `translateX(${this.translateX}px)`
+    })
     return this
   }
 
@@ -140,11 +136,15 @@ export class Dnode {
    * Dnode 运动完毕，隐藏并归位
    */
   flyBack (): Dnode {
+    if (isFunction(this.onEnd)) {
+      this.onEnd(this)
+    }
+    this.dom.style.display = 'none'
+    this.dom.style.willChange = 'none'
+    this.dom.style.transitionDuration = '0'
+    this.dom.style.transform = `translateX(0px)`
     this.runStatus = DnodeRunStatus.RUN_END
     // this.dom.textContent = ''   // ?? 是否需要有待测试
-    // this.dom.style.display = 'none'
-    this.dom.style.transition = 'none'
-    this.dom.style.transform = 'translate3d(0, 0, 0)'
     return this
   }
 
@@ -161,16 +161,16 @@ export class Dnode {
 
   _computedTextSize (): void {
     const renderFont = `${this.fontSize}px ${this.fontFamily}`
-    const { width } = renderTextToSize(this.text, renderFont, Dnode.getInstanceCanvasRenderingContext2D())
-    this.width = Math.ceil(width) + Number(this.fontSize) // 多算一个字体大小的宽度，形成一定的偏移量来处理边界情况
+    const width = measureTextWidth(this.text, renderFont, Dnode.getInstanceCanvasRenderingContext2D())
+    this.width = (width << 0) + Number(this.fontSize)
     this.height = this.control.trackHeight
   }
 
   _computedTotalDistance (): void {
     const totalDis: number = this.control.playerWidth + this.width
     this.translateX = (-1) * totalDis
-    this.launchTime = Math.ceil(this.control.rollingTime * (this.width / totalDis))
-    this.totalTime = Math.ceil(this.control.rollingTime / this.speed)
+    this.launchTime = (this.control.rollingTime * (this.width / totalDis)) << 0
+    this.totalTime = (this.control.rollingTime / this.speed) << 0
   }
 
   /**
@@ -179,7 +179,8 @@ export class Dnode {
    * @returns {Dnode}
    */
   _joinTrack (): Dnode {
-    this.track = this.control.getUnObstructedTrack()
+    const track = this.control.getUnObstructedTrack()
+    track && (this.track = track)
     return this
   }
 
@@ -196,12 +197,8 @@ export class Dnode {
     if (!(this.dom instanceof HTMLElement)) {
       throw new Error('Draw error: dom not instanceof HTMLElement !')
     }
-    const drawStyle = this.getDrawStyle()
-    let drawStyleText: string = ''
-    for (const k in drawStyle) {
-      drawStyleText += `${k}: ${drawStyle[k]};`
-    }
-    this.dom.style.cssText = drawStyleText
+    this.dom.style.willChange = 'transform'
+    this.dom.style.cssText = this.getDrawStyle()
     return this
   }
 
